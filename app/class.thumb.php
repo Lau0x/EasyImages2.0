@@ -157,7 +157,6 @@ class Thumb
         # 合成缩略图
         imagecopyresampled($thumb, $tmp_img, 0, 0, 0, $dst_y, $width, $height, $img_w, $img_h);
 
-        ob_clean();
         # 展示图片
         ob_start();
         $showimg = 'image' . self::$img_type;

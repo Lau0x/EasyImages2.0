@@ -566,12 +566,12 @@ auto_delete(); //定时删除
                     <div class="form-group col-md-12">
                         <div class="form-group col-md-6 col-xs-12">
                             <label data-toggle="tooltip" title="请选择合适的缩略图生成方式">缩略图生成方式</label>
-                            <div class="input-group" data-toggle="tooltip" title="原图 | 直接输出上传链接,会导致流量增加<br/>TimThumb (推荐) | 优点: 带缓存周期 | 缺点: cdn无法缓存<br/>上传生成 | 优点: 缩略图直链,缓存不失效 | 低配vps负载较大,影响前端上传速度">
+                            <div class="input-group" data-toggle="tooltip" title="原图 | 直接输出上传链接,会导致流量增加<br/>访问生成 | 优点: 不提前占用空间 | 缺点: 每次访问会动态处理<br/>上传生成 | 优点: 缩略图直链,缓存不失效 | 低配vps负载较大,影响前端上传速度">
                                 <span class="input-group-addon">生成模式</span>
                                 <select class="form-control" name="thumbnail">
                                     <option value="0" <?php if ($config['thumbnail'] == 0) echo 'selected'; ?>>原图</option>
                                     <option value="2" <?php if ($config['thumbnail'] == 2) echo 'selected'; ?>>上传生成 | 直链</option>
-                                    <option value="1" <?php if ($config['thumbnail'] == 1) echo 'selected'; ?>>TimThumb | 推荐</option>
+                                    <option value="1" <?php if ($config['thumbnail'] == 1) echo 'selected'; ?>>访问生成</option>
                                 </select>
                             </div>
                         </div>
