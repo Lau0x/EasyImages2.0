@@ -124,10 +124,6 @@ mustLogin();
     chunk_size: <?php echo $config['chunks']; ?>,
     // 点击文件列表上传文件
     browseByClickList: true,
-    // flash 上传组件地址
-    flash_swf_url: '<?php static_cdn(); ?>/public/static/zui/lib/uploader/Moxie.swf',
-    // silverlight 上传组件地址
-    flash_swf_url: '<?php static_cdn(); ?>/public/static/zui/lib/uploader/Moxie.xap',
     // sign
     multipart_params: {
       'sign': new Date().getTime() / 1000 | 0,

@@ -22,7 +22,7 @@ if (!$config['file_manage']) {
 RexHelper::$root = $_SERVER['DOCUMENT_ROOT'];
 
 
-// 系统用户列表，密码类型 MD5
+// 系统用户列表
 RexHelper::$users[$config['user']] = array(
     'password' => $config['password']
 );
@@ -653,7 +653,7 @@ class RexAction
         if (empty(RexHelper::$users[$uname])) {
             RExplorer::url_redirect('?r=fail', 2, '用户不存在！');
         }
-        if (RexHelper::$users[$uname]['password'] != hash('sha256', (G('password')))) {
+        if (!easyimage_password_verify(G('password'), RexHelper::$users[$uname]['password'])) {
             RExplorer::url_redirect('?r=fail', 2, '密码错误！');
         }
         $_SESSION[RexHelper::$ssid] = array(

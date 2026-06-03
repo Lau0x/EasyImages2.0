@@ -135,7 +135,7 @@ if (isset($_POST['mode']) && $_POST['mode'] === 'delete') {
 
 // 广场|日志 - 回收文件
 if (isset($_POST['mode']) && $_POST['mode'] === 'recycle') {
-    if (is_file(APP_ROOT . $postURL)) {
+    if (easyimage_resolve_upload_file($postURL)) {
         checkImg($postURL, 3);
         exit(json_encode(array(
             'code' => 200,
@@ -160,7 +160,10 @@ if (isset($_POST['mode']) && $_POST['mode'] === 'recycle') {
 // 管理页面 - 删除版本信息文件
 if (isset($_POST['mode']) && $_POST['mode'] === 'del_version_file') {
     try {
-        @unlink(APP_ROOT . $postURL);
+        $versionFile = '/admin/logs/version/version.json';
+        if ($postURL !== $versionFile || !is_file(APP_ROOT . $versionFile) || !@unlink(APP_ROOT . $versionFile)) {
+            throw new Exception('更新版本号失败');
+        }
         $re = json_encode(array(
             'code' => 200,
             'msg'  => '删除成功',
@@ -169,7 +172,6 @@ if (isset($_POST['mode']) && $_POST['mode'] === 'del_version_file') {
             'mode' => 'delete',
             'url'  => $postURL
         ), JSON_UNESCAPED_UNICODE);
-        throw new Exception('更新版本号失败');
     } catch (Exception $e) {
         $re = json_encode(array(
             'code' => 404,
@@ -245,8 +247,8 @@ if (isset($_POST['mode']) && $_POST['mode'] === 'suspic_reimg') {
 // 管理页面 - 删除非空目录
 if (isset($_POST['mode']) && $_POST['mode'] === 'delDir') {
     try {
-        $delDir = APP_ROOT . $config['path'] . $postURL; // 限制删除目录
-        if (deldir($delDir)) {
+        $delDir = easyimage_resolve_upload_dir($postURL);
+        if ($delDir && deldir($delDir)) {
             $re = json_encode(array(
                 'code' => 200,
                 'msg'  => '删除文件夹成功',
@@ -274,8 +276,8 @@ if (isset($_POST['mode']) && $_POST['mode'] === 'delDir') {
 
 // 管理页面 - 删除指定日期文件夹
 if (isset($_POST['dateDir'])) {
-    $delDir = APP_ROOT . $config['path'] . $_POST['dateDir'];
-    if (deldir($delDir)) {
+    $delDir = easyimage_resolve_upload_dir($_POST['dateDir']);
+    if ($delDir && deldir($delDir)) {
         echo json_encode(array(
             'code' => 200,
             'msg'  => '删除成功',

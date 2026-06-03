@@ -92,7 +92,7 @@ if (isset($_POST['password']) and isset($_POST['user'])) {
     }
 
     // 登录日志
-    write_login_log($_POST['user'], $_POST['password'], $login["messege"]);
+    write_login_log($_POST['user'], '', $login["messege"]);
 }
 ?>
 <link rel="stylesheet" href="<?php static_cdn(); ?>/public/static/login.css">
@@ -108,7 +108,7 @@ if (isset($_POST['password']) and isset($_POST['user'])) {
             </div>
             <div class="modal-body">
                 <p class="text-primary">忘记账号可以打开<code>/config/config.php</code>文件找到<code data-toggle="tooltip" title="'user'=><strong>admin</strong>'">user</code>对应的键值->填入</p>
-                <p class="text-success">忘记密码请将密码转换成SHA256(<a href="<?php echo $config['domain'] . '/app/reset_password.php'; ?>" target="_blank" class="text-purple">转换网址</a>)->打开<code>/config/config.php</code>文件->找到<code data-toggle="tooltip" title="'password'=>'<strong>e6e0612609</strong>'">password</code>对应的键值->填入</p>
+                <p class="text-success">忘记密码请生成新的密码哈希(<a href="<?php echo $config['domain'] . '/app/reset_password.php'; ?>" target="_blank" class="text-purple">生成工具</a>)->打开<code>/config/config.php</code>文件->找到<code data-toggle="tooltip" title="'password'=>'<strong>$2y$10$...</strong>'">password</code>对应的键值->填入</p>
                 <h4 class="text-danger">更改后会立即生效并重新登录,请务必牢记账号和密码! </h4>
             </div>
             <div class="modal-footer">
@@ -124,11 +124,11 @@ if (isset($_POST['password']) and isset($_POST['user'])) {
                 <img src="<?php echo $config['login_bg']; ?>" alt="简单图床登陆界面背景图" />
             </div>
             <div class="formBx">
-                <form class="form-horizontal" action="index.php" method="post" onsubmit="return md5_post()">
+                <form class="form-horizontal" action="index.php" method="post">
                     <h2>登录</h2>
                     <label for="account" class="col-sm-2"></label>
                     <input type="text" name="user" id="account" class="form-control" value="" placeholder="输入登录账号" autocomplete="off" required="required">
-                    <input type="password" name="password" id="password" class="form-control" value="" placeholder="输入登录密码" autocomplete="off" required="required"><input type="hidden" name="password" id="md5_password">
+                    <input type="password" name="password" id="password" class="form-control" value="" placeholder="输入登录密码" autocomplete="off" required="required">
                     <?php if ($config['captcha']) : ?>
                         <input class="form-control" type="text" name="code" value="" placeholder="请输入验证码" autocomplete="off" required="required" />
                         <div class="form-group">
@@ -161,16 +161,6 @@ if (isset($_POST['password']) and isset($_POST['user'])) {
 </section>
 </form>
 <script>
-    function md5_post() {
-        var password = document.getElementById('password');
-        var md5pwd = document.getElementById('md5_password');
-        md5pwd.value = password.value;
-        // fix https://github.com/icret/EasyImages2.0/pull/163
-        password.value = "Null";
-        // 可以校验判断表单内容，true就是通过提交，false，阻止提交
-        return true;
-    }
-
     function topggleForm() {
         var container = document.querySelector('.container');
         container.classList.toggle('active');

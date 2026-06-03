@@ -9,11 +9,14 @@ require_once APP_ROOT . '/config/api_key.php';
 // 允许跨域 https://stackoverflow.com/questions/8719276/cross-origin-request-headerscors-with-php-headers
 header("Access-Control-Max-Age: 3600");
 header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Credentials: true");
 header("Access-Control-Allow-Methods: PUT, POST, GET, OPTIONS, DELETE");
 header("Access-Control-Allow-Headers: X-Requested-With, Content-Type, Origin, Cache-Control, Pragma, Authorization, Accept, Accept-Encoding");
 // 定义返回头信息为Json
 header("Content-type: application/json; charset=utf-8");
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    exit;
+}
 
 // 无文件
 if (empty($_FILES['image'])) {
@@ -40,7 +43,7 @@ if ($config['check_ip']) {
 }
 
 // 获取Token并过滤非字母数字, 删除空格
-$token = preg_replace('/[\W]/', '', $_POST['token']);
+$token = isset($_POST['token']) ? preg_replace('/[\W]/', '', $_POST['token']) : '';
 
 // 检查api合法性
 check_api($token);

@@ -231,8 +231,8 @@ if (isset($_POST['uploader_form'])) {
 
 // 删除非空目录
 if (isset($_REQUEST['delDir'])) {
-    $delDir = APP_ROOT . $config['path'] . $_REQUEST['delDir'];
-    if (deldir($delDir)) {
+    $delDir = easyimage_resolve_upload_dir($_REQUEST['delDir']);
+    if ($delDir && deldir($delDir)) {
         echo '
 		<script> new $.zui.Messager("删除成功! ", {
 			type: "success", // 定义颜色主题 
@@ -1107,7 +1107,7 @@ auto_delete(); //定时删除
         </div>
         <div class="tab-pane fade" id="Content10">
             <!-- 管理员账号 start-->
-            <form action="<?php echo $_SERVER['SCRIPT_NAME']; ?>" method="post" onsubmit="return md5_post()">
+            <form action="<?php echo $_SERVER['SCRIPT_NAME']; ?>" method="post">
                 <h5 class="header-dividing">管理员账号<small> 不更改账号或者密码就不要保存</small></h5>
                 <div class="col-md-12">
                     <div class="form-group col-md-4">
@@ -1119,7 +1119,6 @@ auto_delete(); //定时删除
                     <div class="form-group col-md-4">
                         <div class="input-control has-icon-left">
                             <input type="text" name="password" id="password" class="form-control" value="" required="required" placeholder="更改管理密码" onkeyup="this.value=this.value.replace(/\s/g,'')">
-                            <input type="hidden" name="password" id="md5_password">
                             <label for="password" class="input-control-icon-left"><i class="icon icon-key"></i></label>
                         </div>
                     </div>
@@ -1137,12 +1136,12 @@ auto_delete(); //定时删除
                         <li>直接输入账号和密码即可完成修改</li>
                         <li>更改后会立即生效并重新登录,请务必牢记账号和密码! </li>
                         <li>如果忘记账号可以打开-><code>/config/config.php</code>文件->找到<code data-toggle="tooltip" title="'user'=><strong>admin</strong>'">user</code>对应的键值->填入</li>
-                        <li>如果忘记密码请将密码->转换成SHA256-><a href="<?php echo $config['domain'] . '/app/reset_password.php'; ?>" target="_blank" class="text-purple">转换网址</a>->打开<code>/config/config.php</code>文件->找到<code data-toggle="tooltip" title="'password'=>'<strong>e6e0612609</strong>'">password</code>对应的键值->填入</li>
+                        <li>如果忘记密码请生成新的密码哈希-><a href="<?php echo $config['domain'] . '/app/reset_password.php'; ?>" target="_blank" class="text-purple">生成工具</a>->打开<code>/config/config.php</code>文件->找到<code data-toggle="tooltip" title="'password'=>'<strong>$2y$10$...</strong>'">password</code>对应的键值->填入</li>
                     </ul>
                 </div>
             </div>
             <!-- 上传用户管理 start-->
-            <form action="<?php echo $_SERVER['SCRIPT_NAME']; ?>" method="post" onsubmit="return uploader_md5_post()">
+            <form action="<?php echo $_SERVER['SCRIPT_NAME']; ?>" method="post">
                 <h5 class="header-dividing">上传者账号<small> 账户只能用于上传</small></h5>
                 <div class="col-md-12">
                     <div class="form-group col-md-3">
@@ -1154,7 +1153,6 @@ auto_delete(); //定时删除
                     <div class="form-group col-md-3">
                         <div class="input-control has-icon-left">
                             <input type="text" name="uploader_password" id="uploader_password" class="form-control" value="" required="required" autocomplete="off" placeholder="添加/更改 上传者密码" onkeyup="this.value=this.value.replace(/\s/g,'')">
-                            <input type="hidden" name="uploader_password" id="uploader_md5_password">
                             <label for="password" class="input-control-icon-left"><i class="icon icon-key"></i></label>
                         </div>
                     </div>
@@ -1566,25 +1564,6 @@ auto_delete(); //定时删除
     if ($.zui.store.pageGet('data-tab-now') == null) {
         $("a[href = '#Content1']").parent().addClass("active in")
         $('#Content1').addClass("active in")
-    }
-
-    // 账号密码
-    function uploader_md5_post() {
-        var password = document.getElementById('uploader_password');
-        var md5pwd = document.getElementById('uploader_md5_password');
-        md5pwd.value = password.value;
-        password.value = "Null";
-        //可以校验判断表单内容,true就是通过提交,false,阻止提交
-        return true;
-    }
-    // 账号密码
-    function md5_post() {
-        var password = document.getElementById('password');
-        var md5pwd = document.getElementById('md5_password');
-        md5pwd.value = password.value;
-        password.value = "Null";
-        //可以校验判断表单内容,true就是通过提交,false,阻止提交
-        return true;
     }
 
     // 动态显示要删除的图片

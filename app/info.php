@@ -19,6 +19,15 @@ if (isset($_GET['img'])) {
     $getIMG = "/public/images/404.png";
 }
 
+$imgABPath = easyimage_resolve_upload_file($getIMG);
+$isUploadImage = (bool)$imgABPath;
+
+if ($isUploadImage) {
+    $getIMG = $config['path'] . easyimage_upload_relative_path($imgABPath);
+} else {
+    $getIMG = "/public/images/404.png";
+    $imgABPath = APP_ROOT . $getIMG;
+}
 
 // 开启隐藏上传目录
 if ($config['hide_path']) {
@@ -34,6 +43,10 @@ if ($config['hide_path']) {
     $logs = str_replace('/', '-', substr(str_replace($config['path'], '', parse_url($img_url, PHP_URL_PATH)), 0, 7));
 }
 
+if (!$isUploadImage) {
+    $img_url = $config['domain'] . $getIMG;
+}
+
 // 导入日志文件
 $logsName = basename($img_url);
 if (is_file(APP_ROOT . '/admin/logs/upload/' . $logs . '.php')) {
@@ -44,14 +57,6 @@ if (is_file(APP_ROOT . '/admin/logs/upload/' . $logs . '.php')) {
 if (empty($logs[$logsName])) {
     $logs = array($logsName => array('source' => '日志不存在', 'date' => '日志不存在', 'ip' => '0.0.0.0', 'port' => '0', 'user_agent' => '日志不存在', 'path' => '日志不存在', 'size' => '日志不存在', 'md5' => '日志不存在', 'checkImg' => '日志不存在', 'from' => '日志不存在'));
 }
-// 图片真实路径
-$imgABPath = APP_ROOT . $getIMG;
-// 图片是否存在
-if (!is_file($imgABPath)) {
-    $imgABPath = APP_ROOT . "/public/images/404.png";
-    $img_url = $config['domain'] . "/public/images/404.png";
-}
-
 // 图片尺寸
 $imgSize = filesize($imgABPath);
 // 上传时间

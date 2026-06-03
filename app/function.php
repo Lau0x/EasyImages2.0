@@ -602,6 +602,91 @@ function urlHash($data, $mode, $key = null)
     }
 }
 
+function easyimage_path_is_inside($path, $base)
+{
+    $realPath = realpath($path);
+    $realBase = realpath($base);
+
+    if ($realPath === false || $realBase === false) {
+        return false;
+    }
+
+    $realPath = str_replace('\\', '/', $realPath);
+    $realBase = rtrim(str_replace('\\', '/', $realBase), '/') . '/';
+    $pathForCompare = is_dir($realPath) ? rtrim($realPath, '/') . '/' : $realPath;
+
+    return strpos($pathForCompare, $realBase) === 0;
+}
+
+function easyimage_upload_base()
+{
+    global $config;
+    return APP_ROOT . $config['path'];
+}
+
+function easyimage_candidate_upload_paths($path)
+{
+    global $config;
+
+    $path = strip_tags((string)$path);
+    $parsedPath = parse_url($path, PHP_URL_PATH);
+    $path = ($parsedPath === null || $parsedPath === false) ? '' : urldecode(trim($parsedPath));
+    $path = str_replace('\\', '/', $path);
+    $base = easyimage_upload_base();
+    $candidates = array();
+
+    if (strpos($path, APP_ROOT) === 0) {
+        $candidates[] = $path;
+    }
+
+    if ($path !== '' && $path[0] === '/') {
+        $candidates[] = APP_ROOT . $path;
+    }
+
+    $candidates[] = APP_ROOT . '/' . ltrim($path, '/');
+    $candidates[] = rtrim($base, '/') . '/' . ltrim($path, '/');
+
+    if (strpos($path, $config['path']) === 0) {
+        $candidates[] = APP_ROOT . '/' . ltrim($path, '/');
+    }
+
+    return array_unique($candidates);
+}
+
+function easyimage_resolve_upload_file($path)
+{
+    foreach (easyimage_candidate_upload_paths($path) as $candidate) {
+        if (is_file($candidate) && easyimage_path_is_inside($candidate, easyimage_upload_base())) {
+            return realpath($candidate);
+        }
+    }
+
+    return false;
+}
+
+function easyimage_resolve_upload_dir($path)
+{
+    foreach (easyimage_candidate_upload_paths($path) as $candidate) {
+        if (is_dir($candidate) && easyimage_path_is_inside($candidate, easyimage_upload_base())) {
+            return realpath($candidate);
+        }
+    }
+
+    return false;
+}
+
+function easyimage_upload_relative_path($path)
+{
+    if (!easyimage_path_is_inside($path, easyimage_upload_base())) {
+        return false;
+    }
+
+    $realPath = str_replace('\\', '/', realpath($path));
+    $realBase = rtrim(str_replace('\\', '/', realpath(easyimage_upload_base())), '/');
+
+    return ltrim(substr($realPath, strlen($realBase)), '/');
+}
+
 /**
  * 删除指定文件
  * @param $url string 文件
@@ -609,27 +694,13 @@ function urlHash($data, $mode, $key = null)
  */
 function getDel($url, $type)
 {
-    global $config;
-    // url本地化
-    $url = htmlspecialchars(str_replace($config['domain'], '', $url)); // 过滤html 获取url path
-    $url = urldecode(trim($url));
+    $file = easyimage_resolve_upload_file($url);
 
-    if ($type == 'url') {
-        $url = APP_ROOT . $url;
-    }
-    if ($type == 'hash') {
-        $url = APP_ROOT . $url;
+    if ($file && @unlink($file)) {
+        return TRUE;
     }
 
-    // 文件是否存在 限制删除目录
-    if (is_file($url) && strrpos($url, $config['path'])) {
-        // 执行删除
-        if (@unlink($url)) {
-            return TRUE;
-        } else {
-            return FALSE;
-        }
-    }
+    return FALSE;
 }
 
 
@@ -640,30 +711,13 @@ function getDel($url, $type)
  */
 function easyimage_delete($url, $type)
 {
-    global $config;
-    // url本地化
-    $url = htmlspecialchars(str_replace($config['domain'], '', $url)); // 过滤html 获取url path
-    $url = urldecode(trim($url));
+    $file = easyimage_resolve_upload_file($url);
 
-    if ($type == 'url') {
-        $url = APP_ROOT . $url;
-    }
-    if ($type == 'hash') {
-        $url = APP_ROOT . $url;
+    if ($file && @unlink($file)) {
+        return TRUE;
     }
 
-    // 文件是否存在 限制删除目录
-    if (is_file($url) && strrpos($url, $config['path'])) {
-        // 执行删除
-        if (@unlink($url)) {
-            return TRUE;
-        } else {
-            return FALSE;
-        }
-    }
     return FALSE;
-    // 清除查询
-    clearstatcache();
 }
 
 /**
@@ -951,10 +1005,12 @@ function checkImg($imageUrl, $type = 1, $dir = 'suspic/')
 
     /** # 如果违规则移动图片到违规文件夹 */
     if ($bad_pic === true) {
-        $old_path = APP_ROOT . parse_url($imageUrl)['path'];   // 提交网址中的文件路径 /i/2021/10/29/p8vypd.png
-        $name = parse_url($imageUrl)['path'];                  // 获得图片的相对地址
-        $name = str_replace($config['path'], '', $name);       // 去除 path目录
-        $name = str_replace('/', '_', $name);                  // 文件名 2021_10_30_p8vypd.png
+        $old_path = easyimage_resolve_upload_file($imageUrl);
+        if (!$old_path) {
+            return false;
+        }
+        $old_relative_path = easyimage_upload_relative_path($old_path);
+        $name = str_replace('/', '_', $old_relative_path);     // 文件名 2021_10_30_p8vypd.png
         $new_path = APP_ROOT . $config['path'] . $dir . $name; // 新路径含文件名
         $suspic_dir = APP_ROOT . $config['path'] . $dir;       // suspic路径
 
@@ -966,7 +1022,7 @@ function checkImg($imageUrl, $type = 1, $dir = 'suspic/')
 
             // FTP
             if ($config['ftp_status'] === 1) {
-                any_upload(parse_url($imageUrl)['path'], $config['path'] . $dir . $name, 'rename');
+                any_upload($config['path'] . $old_relative_path, $config['path'] . $dir . $name, 'rename');
             }
 
             return true;
@@ -984,10 +1040,17 @@ function re_checkImg($name, $dir = 'suspic/')
 {
     global $config;
 
+    $name = basename(str_replace('\\', '/', $name));
+    if (strpos($name, '..') !== false) {
+        return false;
+    }
     $fileToPath = str_replace('_', '/', $name);                 // 将图片名称还原为带路径的名称，eg:2021_11_03_pbmn1a.jpg =>2021/11/03/pbmn1a.jpg
     $now_path_file = APP_ROOT . $config['path'] . $dir . $name; // 当前图片绝对位置 */i/suspic/2021_10_30_p8vypd.png
-    if (is_file($now_path_file)) {
+    if (is_file($now_path_file) && easyimage_path_is_inside($now_path_file, easyimage_upload_base())) {
         $to_file = APP_ROOT . $config['path'] . $fileToPath;    // 要还原图片的绝对位置 */i/2021/10/30/p8vypd.png
+        if (!easyimage_path_is_inside(dirname($to_file), easyimage_upload_base())) {
+            return false;
+        }
         rename($now_path_file, $to_file);                       // 移动文件
         // FTP
         if ($config['ftp_status'] === 1) {
@@ -1367,7 +1430,7 @@ function check_api($token)
         exit(json_encode($reJson, JSON_UNESCAPED_UNICODE));
     }
 
-    if (!in_array($tokenList[$token], $tokenList)) {
+    if (empty($token) || !isset($tokenList[$token])) {
         // Token 不存在
         $reJson = array(
             "result" => 'failed',
@@ -1717,7 +1780,7 @@ function auto_delete()
 /**
  * 登录日志
  * @param String $user 用户
- * @param String $pass 密码
+ * @param String $pass 密码，仅保留兼容参数，不写入日志
  * @param String $msg  提示
  */
 function write_login_log($user, $pass, $msg)
@@ -1730,7 +1793,7 @@ function write_login_log($user, $pass, $msg)
     if (!is_file($log_file)) file_put_contents($log_file, '<?php /** 登录日志 */ exit; ?>' . PHP_EOL, FILE_APPEND | LOCK_EX);
 
     /** 写入日志 */
-    $log = htmlentities(date('Y-m-d H:i:s') . ' IP: ' . real_ip() . ' 账号: ' . $user . ' 密码: ' .  $pass . ' 提示: ' . $msg);
+    $log = htmlentities(date('Y-m-d H:i:s') . ' IP: ' . real_ip() . ' 账号: ' . $user . ' 密码: [已隐藏] 提示: ' . $msg);
     file_put_contents($log_file, $log . PHP_EOL, FILE_APPEND | LOCK_EX);
 }
 
