@@ -5,6 +5,16 @@ require_once __DIR__ . '/header.php';
 
 /** 顶部广告 */
 if ($config['ad_top']) echo $config['ad_top_info'];
+
+function easyimage_list_html($value)
+{
+  return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
+}
+
+function easyimage_list_js($value)
+{
+  return json_encode((string)$value, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+}
 ?>
 <div class="row">
   <div class="col-md-12">
@@ -18,7 +28,15 @@ if ($config['ad_top']) echo $config['ad_top_info'];
       $listDate = $config['listDate'];                                                                  // 配置限制日期
       $path =  date('Y/m/d/');                                                                          // 当前日期
       if (isset($_GET['date'])) {
-        if ($_GET['date'] < date('Y/m/d/', strtotime("- $listDate day"))) {                             // GET日期小于配置日期时返回当前日期
+        $requestDate = trim($_GET['date']);
+        $requestTime = strtotime(rtrim($requestDate, '/'));
+        if (
+          !preg_match('/^\d{4}\/\d{2}\/\d{2}\/$/', $requestDate) ||
+          $requestTime === false ||
+          date('Y/m/d/', $requestTime) !== $requestDate
+        ) {
+          $path =  date('Y/m/d/');
+        } elseif ($requestTime < strtotime("- $listDate day")) {                                        // GET日期小于配置日期时返回当前日期
           $path =  date('Y/m/d/');
           echo '
           <script>
@@ -28,18 +46,17 @@ if ($config['ad_top']) echo $config['ad_top_info'];
             }).show();
           </script>';
         } else {
-          $path = $_GET['date'];                                                                        // 如果不小于则返回当前GET日期
+          $path = date('Y/m/d/', $requestTime);                                                         // 如果不小于则返回当前GET日期
         }
       }
 
-      $path = preg_replace("/^d{4}-d{2}-d{2} d{2}:d{2}:d{2}$/s", "", trim($path));                      // 过滤非日期，删除空格
       $keyNum = isset($_GET['num']) ? $_GET['num'] : $config['listNumber'];                             // 获取指定浏览数量
-      $keyNum = preg_replace("/[\W]/", "", trim($keyNum));                                              // 过滤非数字，删除空格
+      $keyNum = (int)preg_replace("/[\W]/", "", trim($keyNum));                                         // 过滤非数字，删除空格
+      if ($keyNum < 1) $keyNum = (int)$config['listNumber'];
       // $fileArr = getFile(APP_ROOT . config_path($path));                                             // 获取当日上传列表
       $fileType = isset($_GET['search']) ? '*.' . preg_replace("/[\W]/", "", $_GET['search'])  : '*.*'; // 按照图片格式
       $fileArr = get_file_by_glob(APP_ROOT . config_path($path) .  $fileType, 'list');                  // 获取当日上传列表
-      $allUploud = isset($_GET['date']) ? $_GET['date'] : date('Y/m/d/');
-      $allUploud = get_file_by_glob(APP_ROOT . $config['path'] . $allUploud, 'number');                 // 当前日期全部上传
+      $allUploud = get_file_by_glob(APP_ROOT . $config['path'] . $path, 'number');                      // 当前日期全部上传
       $httpUrl = array('date' => $path, 'num' => getFileNumber(APP_ROOT . config_path($path)));         // 组合url
 
       // 隐藏path目录获取图片复制与原图地址
@@ -59,24 +76,25 @@ if ($config['ad_top']) echo $config['ad_top_info'];
                 $relative_path = config_path($path) . $value;     // 相对路径
                 $imgUrl = $config['domain'] . $relative_path;     // 图片地址
                 $linkUrl = rand_imgurl() . $config_path . $value; // 图片复制与原图地址
+                $thumbUrl = creat_thumbnail_by_list($imgUrl);
             ?>
                 <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12">
                   <div class="card">
-                    <li><img src="<?php static_cdn(); ?>/public/images/loading.svg" data-image="<?php echo creat_thumbnail_by_list($imgUrl); ?>" data-original="<?php echo $imgUrl; ?>" alt="简单图床-EasyImage"></li>
+                    <li><img src="<?php static_cdn(); ?>/public/images/loading.svg" data-image="<?php echo easyimage_list_html($thumbUrl); ?>" data-original="<?php echo easyimage_list_html($imgUrl); ?>" alt="简单图床-EasyImage"></li>
                     <div class="bottom-bar">
-                      <a href="<?php echo $linkUrl; ?>" target="_blank"><i class="icon icon-picture" data-toggle="tooltip" title="打开" style="margin-left:10px;"></i></a>
-                      <a href="#" class="copy" data-clipboard-text="<?php echo $linkUrl; ?>" data-toggle="tooltip" title="复制链接" style="margin-left:10px;"><i class="icon icon-copy"></i></a>
+                      <a href="<?php echo easyimage_list_html($linkUrl); ?>" target="_blank"><i class="icon icon-picture" data-toggle="tooltip" title="打开" style="margin-left:10px;"></i></a>
+                      <a href="#" class="copy" data-clipboard-text="<?php echo easyimage_list_html($linkUrl); ?>" data-toggle="tooltip" title="复制链接" style="margin-left:10px;"><i class="icon icon-copy"></i></a>
                       <?php if ($config['show_exif_info'] || is_who_login('admin')) : ?>
-                        <a href="/app/info.php?img=<?php echo $relative_path; ?>" data-toggle="tooltip" title="详细信息" target="_blank" style="margin-left:10px;"><i class="icon icon-info-sign"></i></a>
+                        <a href="/app/info.php?img=<?php echo rawurlencode($relative_path); ?>" data-toggle="tooltip" title="详细信息" target="_blank" style="margin-left:10px;"><i class="icon icon-info-sign"></i></a>
                       <?php endif; ?>
-                      <a href="/app/down.php?dw=<?php echo $relative_path; ?>" data-toggle="tooltip" title="下载文件" target="_blank" style="margin-left:10px;"><i class="icon icon-cloud-download"></i></a>
+                      <a href="/app/down.php?dw=<?php echo rawurlencode($relative_path); ?>" data-toggle="tooltip" title="下载文件" target="_blank" style="margin-left:10px;"><i class="icon icon-cloud-download"></i></a>
                       <?php if (!empty($config['report'])) : ?>
-                        <a href="<?php echo $config['report'] . '?Website1=' . $linkUrl; ?>" target="_blank"><i class="icon icon-question-sign" data-toggle="tooltip" title="举报文件" style="margin-left:10px;"></i></a>
+                        <a href="<?php echo easyimage_list_html($config['report'] . '?Website1=' . rawurlencode($linkUrl)); ?>" target="_blank"><i class="icon icon-question-sign" data-toggle="tooltip" title="举报文件" style="margin-left:10px;"></i></a>
                       <?php endif; ?>
                       <?php if (is_who_login('admin')) : ?>
-                        <a href="#" onclick="ajax_post('<?php echo $relative_path; ?>','recycle')" data-toggle="tooltip" title="回收文件" style="margin-left:10px;"><i class="icon icon-undo"></i></a>
-                        <a href="#" onclick="ajax_post('<?php echo $relative_path; ?>')" data-toggle="tooltip" title="删除文件" style="margin-left:10px;"><i class="icon icon-trash"></i></a>
-                        <label class="text-primary"><input type="checkbox" id="url" name="checkbox" value="<?php echo $relative_path; ?>"> 选择</label>
+                        <a href="#" onclick="ajax_post(<?php echo easyimage_list_html(easyimage_list_js($relative_path)); ?>,'recycle')" data-toggle="tooltip" title="回收文件" style="margin-left:10px;"><i class="icon icon-undo"></i></a>
+                        <a href="#" onclick="ajax_post(<?php echo easyimage_list_html(easyimage_list_js($relative_path)); ?>)" data-toggle="tooltip" title="删除文件" style="margin-left:10px;"><i class="icon icon-trash"></i></a>
+                        <label class="text-primary"><input type="checkbox" id="url" name="checkbox" value="<?php echo easyimage_list_html($relative_path); ?>"> 选择</label>
                       <?php endif; ?>
                     </div>
                   </div>
