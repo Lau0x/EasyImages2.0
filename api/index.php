@@ -53,7 +53,8 @@ $tokenID = $tokenList[$token]['id'];
 if (!$config['chunks']) {
     $handle = new Upload($_FILES['image'], 'zh_CN');
 } else {
-    $chunk = chunk($_POST['name']);
+    $chunkName = isset($_POST['name']) ? $_POST['name'] : $_FILES['image']['name'];
+    $chunk = chunk($chunkName);
     $handle = new Upload($chunk, 'zh_CN');
 }
 

@@ -381,7 +381,7 @@ function getExtensions()
     $arr = explode(',', $config['extensions']);
     $mime = '';
     for ($i = 0; $i < count($arr); $i++) {
-        $mime .= $arr . ',';
+        $mime .= trim($arr[$i]) . ',';
     }
     return rtrim($mime, ',');
 }
@@ -1269,7 +1269,7 @@ function real_ip()
  */
 function checkIP($ipNow = null, $ipList = null, $model = false)
 {
-    $ipNow = isset($ipNow) ?: real_ip();
+    $ipNow = isset($ipNow) ? $ipNow : real_ip();
 
     // 将IP文本转换为数组
     if (is_string($ipList)) {
@@ -1833,27 +1833,56 @@ function any_upload($remoteFile = null, $localFile = null, $way = 'upload')
 function chunk($target_name)
 {
     global $config;
+    $target_name = basename(str_replace('\\', '/', (string)$target_name));
+    if ($target_name === '' || strpos($target_name, '..') !== false) {
+        die('Invalid input');
+    }
+
+    if (!isset($_REQUEST['chunk'], $_REQUEST['chunks']) || !is_numeric($_REQUEST['chunk']) || !is_numeric($_REQUEST['chunks'])) {
+        die('Invalid input');
+    }
+
+    $chunk = (int)$_REQUEST['chunk'];
+    $chunks = (int)$_REQUEST['chunks'];
+    if ($chunk < 0 || $chunks <= 0 || $chunk >= $chunks) {
+        die('Invalid input');
+    }
+
+    $fileField = isset($_FILES['file']) ? 'file' : (isset($_FILES['image']) ? 'image' : null);
+    if (!$fileField || empty($_FILES[$fileField]['tmp_name'])) {
+        die('Invalid input');
+    }
+
+    $cache_dir = APP_ROOT . $config['path'] . 'cache/';
     // 分片缓存目录
-    $temp_dir = APP_ROOT . $config['path'] . 'cache/' . $target_name . '/';
+    $temp_dir = $cache_dir . 'chunks/' . $target_name . '/';
     // 分片合并后的文件
-    $target_file = APP_ROOT . $config['path'] . 'cache/' . $target_name;
+    $target_file = $cache_dir . $target_name;
     // 储存分片
     if (!is_dir($temp_dir)) mkdir($temp_dir, 0755, true);
-    // 检查分片参数
-    if (!is_numeric($_REQUEST['chunk']) || !is_numeric($_REQUEST['chunks'])) {
-        die('Invalid input'); // or die('Invalid input');
-    }
     // 移动缓存分片
-    move_uploaded_file($_FILES['file']['tmp_name'], $temp_dir . $_REQUEST['chunk']);
+    if (!move_uploaded_file($_FILES[$fileField]['tmp_name'], $temp_dir . $chunk)) {
+        die('Invalid input');
+    }
     // 合并分片
-    if ($_REQUEST['chunk'] == $_REQUEST['chunks'] - 1) { // 最后一个分片
-        if (!is_dir($target_file)) mkdir($target_file, 0755, true);
-        $handle = fopen($target_name, 'x+');
-        for ($i = 0; $i < $_REQUEST['chunks']; $i++) {
+    if ($chunk == $chunks - 1) { // 最后一个分片
+        $handle = fopen($target_file, 'wb');
+        for ($i = 0; $i < $chunks; $i++) {
+            if (!is_file($temp_dir . $i)) {
+                fclose($handle);
+                @unlink($target_file);
+                die('Invalid input');
+            }
             fwrite($handle, file_get_contents($temp_dir . $i));
         }
         fclose($handle);
         deldir($temp_dir); // 删除临时目录
+        return $target_file;
     }
-    return $target_name;
+
+    exit(json_encode(array(
+        "result" => "success",
+        "code" => 206,
+        "message" => "Chunk uploaded",
+    ), JSON_UNESCAPED_UNICODE));
 }

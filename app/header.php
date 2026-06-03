@@ -49,8 +49,12 @@
 					<li><a href="<?php echo $config['domain']; ?>/admin/chart.php"><i class="icon icon-pie-chart"></i> 统计</a></li>
 				<?php endif; ?>
 				<?php /** 账号登录 */ if (is_who_login('status')) : ?>
+					<?php
+					$authCookie = isset($_COOKIE['auth']) ? json_decode($_COOKIE['auth'], true) : array();
+					$authUser = isset($authCookie[0]) ? htmlspecialchars($authCookie[0], ENT_QUOTES, 'UTF-8') : '';
+					?>
 					<!-- 右侧的导航项目 -->
-					<li class="nav navbar-nav navbar-right hidden-xs"><a href="<?php echo $config['domain']; ?>/admin/index.php?login=logout">您好：<?php echo json_decode($_COOKIE['auth'])[0]; ?> <i class="icon icon-signout"></i></a></li>
+					<li class="nav navbar-nav navbar-right hidden-xs"><a href="<?php echo $config['domain']; ?>/admin/index.php?login=logout">您好：<?php echo $authUser; ?> <i class="icon icon-signout"></i></a></li>
 				<?php else : ?>
 					<li class="nav navbar-nav navbar-right hidden-xs"><a href="<?php echo $config['domain']; ?>/admin/index.php"><i class="icon icon-user"> 登录</i></a></li>
 				<?php endif; ?>

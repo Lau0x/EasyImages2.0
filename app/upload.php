@@ -77,7 +77,8 @@ if ($config['ip_upload_counts'] > 0 && !is_who_login('status')) {
 
 // 分片上传
 if ($config['chunks']) {
-    $chunk = chunk($_POST['name']);
+    $chunkName = isset($_POST['name']) ? $_POST['name'] : $_FILES['file']['name'];
+    $chunk = chunk($chunkName);
     // exit($chunk);
     $handle = new Upload($chunk, 'zh_CN');
 } else {

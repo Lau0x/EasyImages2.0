@@ -26,11 +26,11 @@ if (isset($_GET['login_log'])) {
 // 上传日志
 require_once APP_ROOT . '/app/header.php';
 
-if (isset($_POST['logDate'])) {
-    $logFile = APP_ROOT . '/admin/logs/upload/' . $_POST['logDate'] . '.php';
-} else {
-    $logFile = APP_ROOT . '/admin/logs/upload/' . date('Y-m') . '.php';
+$logDate = isset($_POST['logDate']) ? $_POST['logDate'] : date('Y-m');
+if (!preg_match('/^\d{4}-\d{2}$/', $logDate)) {
+    $logDate = date('Y-m');
 }
+$logFile = APP_ROOT . '/admin/logs/upload/' . $logDate . '.php';
 
 try {
     if (is_file($logFile)) {
@@ -44,6 +44,33 @@ try {
 } catch (Exception $e) {
     require_once APP_ROOT . '/app/footer.php';
     exit;
+}
+
+$logRows = array();
+foreach ($logs as $k => $v) {
+    $logPath = isset($v['path']) ? (string)$v['path'] : '';
+    $logPathAttr = htmlspecialchars($logPath, ENT_QUOTES, 'UTF-8');
+    $logPathJs = htmlspecialchars(json_encode($logPath, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES, 'UTF-8');
+    $viewUrl = htmlspecialchars(rand_imgurl() . $logPath, ENT_QUOTES, 'UTF-8');
+    $infoUrl = htmlspecialchars('/app/info.php?img=' . rawurlencode($logPath), ENT_QUOTES, 'UTF-8');
+    $ip = isset($v['ip']) ? (string)$v['ip'] : '';
+    $port = isset($v['port']) ? (string)$v['port'] : '';
+    $from = isset($v['from']) ? $v['from'] : '';
+
+    $logRows[] = array(
+        'orgin' => (string)$k,
+        'source' => '<input class="form-control input-sm" type="text" value="' . htmlspecialchars(isset($v['source']) ? $v['source'] : '', ENT_QUOTES, 'UTF-8') . '" readonly>',
+        'date' => htmlspecialchars(isset($v['date']) ? $v['date'] : '', ENT_QUOTES, 'UTF-8'),
+        'ip' => '<a href="http://freeapi.ipip.net/' . rawurlencode($ip) . '" target="_blank">' . htmlspecialchars($ip . ':' . $port, ENT_QUOTES, 'UTF-8') . '</a>',
+        'ip2region' => ip2region($ip),
+        'user_agent' => '<input class="form-control input-sm" type="text" value="' . htmlspecialchars(isset($v['user_agent']) ? $v['user_agent'] : '', ENT_QUOTES, 'UTF-8') . '" readonly>',
+        'path' => '<input class="form-control input-sm" type="text" value="' . $logPathAttr . '" readonly>',
+        'md5' => '<input class="form-control input-sm" type="text" value="' . htmlspecialchars(isset($v['md5']) ? $v['md5'] : '', ENT_QUOTES, 'UTF-8') . '" readonly>',
+        'size' => htmlspecialchars(isset($v['size']) ? $v['size'] : '', ENT_QUOTES, 'UTF-8'),
+        'checkImg' => strstr('OFF', isset($v['checkImg']) ? $v['checkImg'] : '') ? '否' : '是',
+        'from' => is_string($from) ? '网页' : 'API: ' . $from,
+        'manage' => '<div class="btn-group"><a href="' . $viewUrl . '" target="_blank" class="btn btn-mini btn-success">查看</a> <a href="' . $infoUrl . '" target="_blank" class="btn btn-mini">信息</a><a href="#" onclick="ajax_post(' . $logPathJs . ',\'recycle\')" class="btn btn-mini btn-info">回收</a> <a href="#" onclick="ajax_post(' . $logPathJs . ',\'delete\')" class="btn btn-mini btn-danger">删除</a></div>',
+    );
 }
 ?>
 <div class="col-md-12">
@@ -161,23 +188,7 @@ try {
                     width: 0.1
                 },
             ],
-            array: [
-                <?php foreach ($logs as $k => $v) : ?> {
-                        orgin: '<?php echo $k; ?>',
-                        source: '<input class="form-control input-sm" type="text" value="<?php echo $v['source']; ?>" readonly>',
-                        date: '<?php echo $v['date']; ?>',
-                        ip: '<a href="http://freeapi.ipip.net/<?php echo $v['ip']; ?>" target="_blank"><?php echo $v['ip'] . ':' . $v['port']; ?></a>', // 备用IP查询: https://www.ip138.com/iplookup.asp?ip= http://ip.tool.chinaz.com/$ip
-                        ip2region: '<?php echo ip2region($v['ip']); ?>',
-                        user_agent: '<input class="form-control input-sm" type="text" value="<?php echo $v['user_agent']; ?>" readonly>',
-                        path: '<input class="form-control input-sm" type="text" value="<?php echo $v['path']; ?>" readonly>',
-                        md5: '<input class="form-control input-sm" type="text" value="<?php echo $v['md5']; ?>" readonly>',
-                        size: '<?php echo $v['size']; ?>',
-                        checkImg: '<?php echo strstr('OFF', $v['checkImg']) ? '否' : '是'; ?>',
-                        from: '<?php echo is_string($v['from']) ? "网页" : 'API: ' . $v['from']; ?>',
-                        manage: '<div class="btn-group"><a href="<?php echo rand_imgurl() . $v['path']; ?>" target="_blank" class="btn btn-mini btn-success">查看</a> <a href="/app/info.php?img=<?php echo $v['path']; ?>" target="_blank" class="btn btn-mini">信息</a><a href="#" onclick="ajax_post(\'<?php echo $v['path']; ?>\',\'recycle\')" class="btn btn-mini btn-info">回收</a> <a href="#" onclick="ajax_post(\'<?php echo $v['path']; ?>\',\'delete\')" class="btn btn-mini btn-danger">删除</a></div>',
-                    },					
-                <?php endforeach; ?>
-            ]
+            array: <?php echo json_encode($logRows, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>
         },
         sortable: true,
         hoverCell: true,
