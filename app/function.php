@@ -71,6 +71,41 @@ function is_Gif_Webp_Animated($src)
     return strpos($filecontent, chr(0x21) . chr(0xff) . chr(0x0b) . 'NETSCAPE2.0') === FALSE ? false : true;
 }
 
+function easyimage_hash_password($password)
+{
+    return password_hash($password, PASSWORD_DEFAULT);
+}
+
+function easyimage_is_password_hash($password)
+{
+    $info = password_get_info($password);
+    return !empty($info['algo']);
+}
+
+function easyimage_password_verify($password, $storedPassword)
+{
+    $password = (string)$password;
+    $storedPassword = (string)$storedPassword;
+
+    if (easyimage_is_password_hash($storedPassword)) {
+        return password_verify($password, $storedPassword);
+    }
+
+    return hash_equals($storedPassword, hash('sha256', $password)) || hash_equals($storedPassword, $password);
+}
+
+function easyimage_hash_equals($knownString, $userString)
+{
+    return hash_equals((string)$knownString, (string)$userString);
+}
+
+function easyimage_set_auth_cookie($user, $storedPassword)
+{
+    $browser_cookie = json_encode(array($user, $storedPassword));
+    $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == '443');
+    setcookie('auth', $browser_cookie, time() + 3600 * 24 * 14, '/', '', $secure, true);
+}
+
 
 /**
  * 2023-01-06 校验登录
@@ -95,13 +130,13 @@ function _login($user = null, $password = null)
             $browser_cookie = json_decode($_COOKIE['auth']);
 
             // cookie无法读取
-            if (!$browser_cookie) return json_encode(array('code' => 400, 'level' => 0, 'messege' => '登录已过期,请重新登录'));
+            if (!$browser_cookie || !is_array($browser_cookie) || count($browser_cookie) < 2) return json_encode(array('code' => 400, 'level' => 0, 'messege' => '登录已过期,请重新登录'));
             // 判断账号是否存在
             if ($browser_cookie[0] !== $config['user'] && !array_key_exists($browser_cookie[0], $guestConfig)) return json_encode(array('code' => 400, 'level' => 0, 'messege' => '账号不存在'));
             // 判断是否管理员
-            if ($browser_cookie[0] === $config['user'] && $browser_cookie[1] === $config['password']) return json_encode(array('code' => 200, 'level' => 1, 'messege' => '尊敬的管理员'));
+            if ($browser_cookie[0] === $config['user'] && easyimage_hash_equals($config['password'], $browser_cookie[1])) return json_encode(array('code' => 200, 'level' => 1, 'messege' => '尊敬的管理员'));
             // 判断是否上传者
-            if (array_key_exists($browser_cookie[0], $guestConfig) && $browser_cookie[1] === $guestConfig[$browser_cookie[0]]['password']) {
+            if (array_key_exists($browser_cookie[0], $guestConfig) && easyimage_hash_equals($guestConfig[$browser_cookie[0]]['password'], $browser_cookie[1])) {
                 // 判断上传者是否过期
                 if ($guestConfig[$browser_cookie[0]]['expired'] < time()) {
                     // 上传者账户密码正确,但是账户过期
@@ -118,19 +153,15 @@ function _login($user = null, $password = null)
     $user = strip_tags($user);
     $password = strip_tags($password);
     // 是否管理员
-    if ($user === $config['user'] && $password === $config['password']) {
-        // 将账号密码序列化后存储
-        $browser_cookie = json_encode(array($user, $password));
-        setcookie('auth', $browser_cookie, time() + 3600 * 24 * 14, '/');
+    if ($user === $config['user'] && easyimage_password_verify($password, $config['password'])) {
+        easyimage_set_auth_cookie($user, $config['password']);
         return json_encode(array('code' => 200, 'level' => 1, 'messege' => '管理员登录成功'));
     }
     // 是否上传者
-    if (array_key_exists($user, $guestConfig) && $password === $guestConfig[$user]['password']) {
+    if (array_key_exists($user, $guestConfig) && easyimage_password_verify($password, $guestConfig[$user]['password'])) {
         // 上传者账号过期
         if ($guestConfig[$user]['expired'] < time()) return json_encode(array('code' => 400, 'level' => 0, 'messege' => $user . '账号已过期'));
-        // 未过期设置cookie
-        $browser_cookie = json_encode(array($user, $password));
-        setcookie('auth', $browser_cookie, time() + 3600 * 24 * 14, '/');
+        easyimage_set_auth_cookie($user, $guestConfig[$user]['password']);
         return json_encode(array('code' => 200, 'level' => 2, 'messege' => $user . '用户登录成功'));
     }
     // 检查账号是否存在
@@ -164,28 +195,25 @@ function checkLogin()
         $getCOK = json_decode($_COOKIE['auth']);
 
         // 无法读取cookie
-        if (!$getCOK) {
+        if (!$getCOK || !is_array($getCOK) || count($getCOK) < 2) {
             return 202;
         }
 
-        // 密码错误
-        if ($getCOK[1] !== $config['password'] && $getCOK[1] !== $guestConfig[$getCOK[0]]['password']) {
-            return 203;
-        }
-
         // 管理员登陆
-        if ($getCOK[0] === $config['user'] && $getCOK[1] === $config['password']) {
+        if ($getCOK[0] === $config['user'] && easyimage_hash_equals($config['password'], $getCOK[1])) {
             return 204;
         }
 
         // 上传者账号登陆
-        if ($getCOK[1] === $guestConfig[$getCOK[0]]['password']) {
+        if (array_key_exists($getCOK[0], $guestConfig) && easyimage_hash_equals($guestConfig[$getCOK[0]]['password'], $getCOK[1])) {
             if ($guestConfig[$getCOK[0]]['expired'] < time()) {
                 // 上传者账号过期
                 return 206;
             }
             return 205;
         }
+
+        return 203;
     }
 }
 

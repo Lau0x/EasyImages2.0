@@ -179,7 +179,7 @@ if (isset($_POST['admin_form'])) {
         ';
         exit(header("refresh:3;"));
     }
-    $postArr = array('user' => $postArr['user'], 'password' => $postArr['password']);
+    $postArr = array('user' => $postArr['user'], 'password' => easyimage_hash_password($postArr['password']));
 
     $new_config = array_replace($config, $postArr);
     cache_write($config_file, $new_config);
@@ -211,7 +211,7 @@ if (isset($_POST['uploader_form'])) {
     // 写入上传者用户数据
     $postArr = array(
         $_POST['uploader_user'] => array(
-            'password' => $_POST['uploader_password'],
+            'password' => easyimage_hash_password($_POST['uploader_password']),
             'expired' => $_POST['uploader_time'] * 86400 + time(),
             'add_time' => time()
         )
@@ -1474,8 +1474,6 @@ auto_delete(); //定时删除
 </div>
 <link rel="stylesheet" href="<?php static_cdn(); ?>/public/static/zui/lib/datagrid/zui.datagrid.min.css">
 <link rel="stylesheet" href="<?php static_cdn(); ?>/public/static/zui/lib/datetimepicker/datetimepicker.min.css">
-<script type="application/javascript" src="<?php static_cdn(); ?>/public/static/crypto/SHA256.js"></script>
-<script type="application/javascript" src="<?php static_cdn(); ?>/public/static/crypto/SHA256.js"></script>
 <script type="application/javascript" src="<?php static_cdn(); ?>/public/static/jscolor/jscolor.min.js"></script>
 <script type="application/javascript" src="<?php static_cdn(); ?>/public/static/zui/lib/datagrid/zui.datagrid.min.js"></script>
 <script type="application/javascript" src="<?php static_cdn(); ?>/public/static/zui/lib/datetimepicker/datetimepicker.min.js"></script>
@@ -1570,19 +1568,21 @@ auto_delete(); //定时删除
         $('#Content1').addClass("active in")
     }
 
-    // 账号密码 | 以md5加密方式发送
+    // 账号密码
     function uploader_md5_post() {
         var password = document.getElementById('uploader_password');
         var md5pwd = document.getElementById('uploader_md5_password');
-        md5pwd.value = SHA256(password.value);
+        md5pwd.value = password.value;
+        password.value = "Null";
         //可以校验判断表单内容,true就是通过提交,false,阻止提交
         return true;
     }
-    // 账号密码 | 以md5加密方式发送
+    // 账号密码
     function md5_post() {
         var password = document.getElementById('password');
         var md5pwd = document.getElementById('md5_password');
-        md5pwd.value = SHA256(password.value);
+        md5pwd.value = password.value;
+        password.value = "Null";
         //可以校验判断表单内容,true就是通过提交,false,阻止提交
         return true;
     }
@@ -1713,7 +1713,7 @@ auto_delete(); //定时删除
                     width: 0.1
                 },
                 {
-                    label: '密码 (SHA256)',
+                    label: '密码摘要',
                     name: 'password',
                     html: true,
                     width: 0.2

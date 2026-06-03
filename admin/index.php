@@ -160,12 +160,11 @@ if (isset($_POST['password']) and isset($_POST['user'])) {
     </div>
 </section>
 </form>
-<script type="application/javascript" src="<?php static_cdn(); ?>/public/static/crypto/SHA256.js"></script>
 <script>
     function md5_post() {
         var password = document.getElementById('password');
         var md5pwd = document.getElementById('md5_password');
-        md5pwd.value = SHA256(password.value);
+        md5pwd.value = password.value;
         // fix https://github.com/icret/EasyImages2.0/pull/163
         password.value = "Null";
         // 可以校验判断表单内容，true就是通过提交，false，阻止提交
