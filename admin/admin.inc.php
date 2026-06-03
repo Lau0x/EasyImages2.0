@@ -266,7 +266,7 @@ auto_delete(); //定时删除
             <li><a data-tab href="#Content11">图片回收<span class="label label-badge label-success"><?php echo get_file_by_glob(APP_ROOT . $config['path'] . 'recycle', 'number'); ?></span></a></li>
             <li><a data-tab href="#Content7">可疑图片<span class="label label-badge label-success"><?php echo get_file_by_glob(APP_ROOT . $config['path'] . 'suspic', 'number'); ?></span></a></li>
             <li><a data-tab href="#Content3">广告设置</a></li>
-            <li><a data-tab href="#Content14">文件管理</a></li>
+            <li><a data-tab href="#Content14">文件清理</a></li>
             <li><a data-tab href="#Content6">图床安全</a></li>
             <li><a data-tab href="#Content10">账号密码</a></li>
             <li><a data-tab href="#Content8">系统信息</a></li>
@@ -730,14 +730,6 @@ auto_delete(); //定时删除
                             </div>
                         </div>
                         <div class="col-md-2">
-                            <!-- <input type="text" name="admin_path" class="form-control input-sm" value="echo $config['admin_path']" placeholder="请自定义管理的上传目录"> -->
-                            <div class="switch switch-inline" data-toggle="tooltip" title="开启文件管理">
-                                <input type="hidden" name="file_manage" value="0">
-                                <input type="checkbox" name="file_manage" value="1" <?php if ($config['file_manage']) echo 'checked="checked"'; ?>>
-                                <label style="font-weight: bold">文件管理</label>
-                            </div>
-                        </div>
-                        <div class="col-md-2">
                             <div class="switch switch-inline" data-toggle="tooltip" title="危险：关闭后除图片外不验证文件是否正常，代表可以上传任意指定格式!">
                                 <input type="hidden" name="allowed" value="0">
                                 <input type="checkbox" name="allowed" value="1" <?php if ($config['allowed']) echo 'checked="checked"'; ?>>
@@ -872,7 +864,7 @@ auto_delete(); //定时删除
                             <th>缩略图</th>
                             <th>文件名</th>
                             <th>文件大小</th>
-                            <th>文件管理</th>
+                            <th>文件操作</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -905,7 +897,6 @@ auto_delete(); //定时删除
                     </tbody>
                 </table>
             </div>
-            <a class="btn btn-mini btn-primary" href="filer.php?path=<?php echo $config['path']; ?>suspic" target="_blank">管理可疑</a>
             <button class="btn btn-mini btn-danger" onclick="ajax_post('/suspic/','delDir')"><?php echo $cache_num; ?>张 | 删除全部</button>
         </div>
         <div class=" tab-pane fade" id="Content8">
@@ -955,8 +946,6 @@ auto_delete(); //定时删除
                 <p>
                     <a href="https://www.openzui.com/" target="_blank"><span class="label label-badge label-primary" data-toggle="tooltip" title="前端框架">ZUI</span></a>
                     <a href="https://github.com/verot/class.upload.php" target="_blank"><span class="label label-badge label-primary" data-toggle="tooltip" title="图像处理类">Verot</span></a>
-                    <a href="https://tinyfilemanager.github.io/" target="_blank"><span class="label label-badge label-primary" data-toggle="tooltip" title="文件管理">Tinyfilemanager</span></a>
-                    <a href="#"><span class="label label-badge label-primary" data-toggle="tooltip" title="文件管理">Web-indexr</span></a>
                     <a href="#Ip2Region" data-toggle="collapse" target="_blank"><span class="label label-badge label-primary" data-toggle="tooltip" title="IP地址数据库">Ip2Region<i class="icon icon-angle-down"></i></span></a>
                     <?php if (empty($config['TinyPng_key'])) : ?>
                         <span class="label label-badge label-warning" data-toggle="tooltip" title="压缩图片 TinyPng<br/>未填写">TinyPng</span>
@@ -1216,7 +1205,7 @@ auto_delete(); //定时删除
                             <th>缩略图</th>
                             <th>文件名</th>
                             <th>文件大小</th>
-                            <th>文件管理</th>
+                            <th>文件操作</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -1249,7 +1238,6 @@ auto_delete(); //定时删除
                     </tbody>
                 </table>
             </div>
-            <a class="btn btn-mini btn-primary" href="filer.php?path=<?php echo $config['path']; ?>recycle" target="_blank">管理回收</a>
             <button class="btn btn-mini btn-danger" onclick="ajax_post('/recycle/','delDir')"><?php echo $cache_num; ?>张 | 删除全部</button>
         </div>
         <div class="tab-pane fade" id="Content12">
@@ -1364,10 +1352,7 @@ auto_delete(); //定时删除
             </form>
         </div>
         <div class="tab-pane fade" id="Content14">
-            <h5 class="header-dividing">文件管理 <small>由作者定制,非必要请勿替换</small></h5>
-            <a class="btn btn-mini btn-primary" href="/admin/manager.php?p=<?php echo date('Y/m/d'); ?> " target="_blank" data-toggle="tooltip" title="使用Tinyfilemanager管理文件"><i class="icon icon-folder-open"> 文件管理</i></a>
-            <a class="btn btn-mini btn-primary" href="filer.php?path=<?php echo $config['path'] . date('Y/m/d'); ?> " target="_blank" data-toggle="tooltip" title="使用web-indexr管理文件"><i class="icon icon-folder-close"> 文件管理</i></a>
-            <h5 class="header-dividing">删除文件 <small>* 删除后不可恢复</small></h5>
+            <h5 class="header-dividing">文件清理 <small>* 删除后不可恢复</small></h5>
             <form class="form-inline" method="POST" style="margin-bottom: 5px;">
                 <p id="delimgurl"></p>
                 <div class="form-group">
@@ -1654,7 +1639,7 @@ auto_delete(); //定时删除
                         add_time: '<?php echo date('Y-m-d H:i:s', $value['add_time']); ?>',
                         expired: '<?php echo $expired; ?>',
                         number: <?php echo get_file_by_glob(APP_ROOT . $config['path'] . $value['id'], $type = 'number'); ?>,
-                        manage: "<a href='/admin/manager.php?p=<?php echo $value['id']; ?>' target='_blank' class='btn btn-mini btn-success <?php if (!$config['token_path_status']) echo 'disabled'; ?>'>文件</a> <a href='admin.inc.php?stop_token=<?php echo $key; ?>' class='btn btn-mini btn-danger'>禁用</a> <a href='admin.inc.php?delete_token=<?php echo $key; ?>' class='btn btn-mini btn-danger'>删除</a> <a href='#' onclick=\"ajax_post('<?php echo $value['id']; ?>','delDir')\" class='btn btn-mini btn-primary <?php if (!$config['token_path_status']) echo 'disabled'; ?>'>删除上传</a>"
+                        manage: "<a href='admin.inc.php?stop_token=<?php echo $key; ?>' class='btn btn-mini btn-danger'>禁用</a> <a href='admin.inc.php?delete_token=<?php echo $key; ?>' class='btn btn-mini btn-danger'>删除</a> <a href='#' onclick=\"ajax_post('<?php echo $value['id']; ?>','delDir')\" class='btn btn-mini btn-primary <?php if (!$config['token_path_status']) echo 'disabled'; ?>'>删除上传</a>"
                     },
                 <?php endforeach; ?>
             ]
@@ -1732,7 +1717,7 @@ auto_delete(); //定时删除
                         add_time: '<?php echo date('Y-m-d H:i:s', $v['add_time']); ?>',
                         expired: '<?php echo $expired; ?>',
                         files: <?php echo get_file_by_glob(APP_ROOT . $config['path'] . $k, $type = 'number'); ?>,
-                        manage: "<a href='/admin/manager.php?p=<?php echo $k; ?>' target='_blank' class='btn btn-mini btn-success <?php if (!$config['guest_path_status']) echo 'disabled'; ?>'>文件</a> <a href='admin.inc.php?stop_guest=<?php echo $k; ?>' class='btn btn-mini btn-danger'>禁用</a> <a class='btn btn-mini btn-danger' href='admin.inc.php?delete_guest=<?php echo $k; ?>'>删除</a> <a class='btn btn-mini btn-primary <?php if (!$config['guest_path_status']) echo 'disabled'; ?>' href='#' onclick=\"ajax_post('<?php echo $k; ?>','delDir')\">删除上传</a>",
+                        manage: "<a href='admin.inc.php?stop_guest=<?php echo $k; ?>' class='btn btn-mini btn-danger'>禁用</a> <a class='btn btn-mini btn-danger' href='admin.inc.php?delete_guest=<?php echo $k; ?>'>删除</a> <a class='btn btn-mini btn-primary <?php if (!$config['guest_path_status']) echo 'disabled'; ?>' href='#' onclick=\"ajax_post('<?php echo $k; ?>','delDir')\">删除上传</a>",
                     },
                 <?php endforeach; ?>
             ]

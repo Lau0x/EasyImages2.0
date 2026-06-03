@@ -742,7 +742,7 @@ function is_who_login($user)
 /**
  * 检查PHP缺少简单图床必备的扩展
  * 需检测的扩展：'fileinfo', 'iconv', 'gd', 'mbstring', 'openssl','zip',
- * zip 扩展不是必须的，但会影响tinyfilemanager文件压缩(本次不检测)。
+ * zip 扩展不是必须的。
  *
  * 检测是否更改默认域名
  *
