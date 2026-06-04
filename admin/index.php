@@ -54,7 +54,7 @@ if (isset($_POST['password']) and isset($_POST['user'])) {
             </script>';
             exit(require_once APP_ROOT . '/app/footer.php');
         } else {
-            session_start();
+            easyimage_session_start();
             if (strtolower($_REQUEST['code']) !== $_SESSION['code']) {
                 echo '
                 <script>

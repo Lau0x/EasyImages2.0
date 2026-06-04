@@ -10,6 +10,7 @@ if (!$config['chart_on'] || !is_who_login('admin')) exit(header('Location: ' . $
 
 // 删除统计文件
 if (isset($_POST['del_total'])) {
+    easyimage_require_csrf();
     @deldir(APP_ROOT . '/admin/logs/counts/');
     echo '
 		<script>

@@ -107,6 +107,86 @@ function easyimage_set_auth_cookie($user, $storedPassword)
     setcookie('auth', $browser_cookie, time() + 3600 * 24 * 14, '/', '', $secure, true);
 }
 
+function easyimage_session_start()
+{
+    if (function_exists('session_status')) {
+        if (session_status() === PHP_SESSION_NONE) {
+            @session_start();
+        }
+        return;
+    }
+
+    if (session_id() === '') {
+        @session_start();
+    }
+}
+
+function easyimage_random_bytes($length)
+{
+    if (function_exists('random_bytes')) {
+        return random_bytes($length);
+    }
+
+    if (function_exists('openssl_random_pseudo_bytes')) {
+        $bytes = openssl_random_pseudo_bytes($length);
+        if ($bytes !== false) {
+            return $bytes;
+        }
+    }
+
+    return hash('sha256', uniqid('', true) . mt_rand(), true);
+}
+
+function easyimage_csrf_token()
+{
+    easyimage_session_start();
+    if (empty($_SESSION['easyimage_csrf_token'])) {
+        $_SESSION['easyimage_csrf_token'] = bin2hex(easyimage_random_bytes(32));
+    }
+    return $_SESSION['easyimage_csrf_token'];
+}
+
+function easyimage_csrf_request_token()
+{
+    if (isset($_POST['csrf_token'])) {
+        return $_POST['csrf_token'];
+    }
+    if (isset($_GET['csrf_token'])) {
+        return $_GET['csrf_token'];
+    }
+    if (isset($_SERVER['HTTP_X_CSRF_TOKEN'])) {
+        return $_SERVER['HTTP_X_CSRF_TOKEN'];
+    }
+    return '';
+}
+
+function easyimage_verify_csrf()
+{
+    easyimage_session_start();
+    if (empty($_SESSION['easyimage_csrf_token'])) {
+        return false;
+    }
+    return easyimage_hash_equals($_SESSION['easyimage_csrf_token'], easyimage_csrf_request_token());
+}
+
+function easyimage_require_csrf($json = false)
+{
+    if (easyimage_verify_csrf()) {
+        return;
+    }
+
+    if ($json) {
+        exit(json_encode(array(
+            'code' => 403,
+            'msg' => '页面令牌已失效, 请刷新后重试',
+            'type' => 'danger',
+            'icon' => 'exclamation-sign',
+        ), JSON_UNESCAPED_UNICODE));
+    }
+
+    exit('Invalid CSRF token');
+}
+
 
 /**
  * 2023-01-06 校验登录

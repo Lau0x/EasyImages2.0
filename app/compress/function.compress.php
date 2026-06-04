@@ -38,7 +38,7 @@ function compress($floder, $type = 'Imgcompress', $source = '')
         if (empty($config['TinyPng_key'])) {
             exit('请先申请TinyPng key并保存再试!');
         }
-        $folder =  '..' . $config['path'] . $source;
+        $folder = rtrim(str_replace('\\', '/', $floder), '/') . '/';
         $tinyImg = new TinyImg();
         $key = $config['TinyPng_key'];
         $input = $folder; //这个文件夹下的文件会被压缩

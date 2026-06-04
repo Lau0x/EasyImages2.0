@@ -1,6 +1,6 @@
+<?php require_once __DIR__ . '/function.php'; ?>
 <!DOCTYPE html>
 <html lang="zh-cn">
-<?php require_once __DIR__ . '/function.php'; ?>
 
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -9,6 +9,8 @@
 	<meta name="force-rendering" content="webkit" />
 	<meta name="author" content="Icret EasyImage2.0">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="referrer" content="same-origin">
+	<meta name="csrf-token" content="<?php echo htmlspecialchars(easyimage_csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">
 	<title><?php echo $config['title']; ?></title>
 	<meta name="keywords" content="<?php echo $config['keywords']; ?>" />
 	<meta name="description" content="<?php echo $config['description']; ?>" />
@@ -18,6 +20,30 @@
 	<link rel="stylesheet" href="<?php static_cdn(); ?>/public/static/zui/theme/zui-theme-<?php echo $config['theme']; ?>.css">
 	<script type="application/javascript" src="<?php static_cdn(); ?>/public/static/zui/lib/jquery/jquery-3.6.4.min.js"></script>
 	<script type="application/javascript" src="<?php static_cdn(); ?>/public/static/zui/js/zui.min.js"></script>
+	<script>
+		(function() {
+			var token = <?php echo json_encode(easyimage_csrf_token(), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
+			if (window.jQuery) {
+				$.ajaxSetup({
+					headers: {
+						'X-CSRF-Token': token
+					}
+				});
+				$(function() {
+					$('form').each(function() {
+						var method = ($(this).attr('method') || 'get').toLowerCase();
+						if (method === 'post' && $(this).find('input[name="csrf_token"]').length === 0) {
+							$('<input>').attr({
+								type: 'hidden',
+								name: 'csrf_token',
+								value: token
+							}).appendTo(this);
+						}
+					});
+				});
+			}
+		})();
+	</script>
 	<!--[if lt IE 9]>
     <script type="application/javascript" src="<?php static_cdn(); ?>/public/static/zui/lib/ieonly/html5shiv.js"></script>
     <script type="application/javascript" src="<?php static_cdn(); ?>/public/static/zui/lib/ieonly/respond.js"></script>

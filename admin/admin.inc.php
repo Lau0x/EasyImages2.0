@@ -18,7 +18,7 @@ if ($config['show_admin_inc'] === 0) {
 if (!is_who_login('admin')) {
     echo '
   <script> new $.zui.Messager("请使用管理员账户登录! ", {
-	type: "danger", // 定义颜色主题 
+	type: "danger", // 定义颜色主题
 	icon: "exclamation-sign" // 定义消息图标
   }).show();</script>';
     header("refresh:2;url=" . $config['domain'] . "/admin/index.php");
@@ -26,7 +26,17 @@ if (!is_who_login('admin')) {
     exit;
 }
 
-// 定义文件位置 
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    easyimage_require_csrf();
+}
+
+foreach (array('stop_token', 'delete_token', 'stop_guest', 'delete_guest', 'delDir') as $csrfAction) {
+    if (isset($_GET[$csrfAction])) {
+        easyimage_require_csrf();
+    }
+}
+
+// 定义文件位置
 $config_file = APP_ROOT . '/config/config.php'; // config.php
 $api_key_file = APP_ROOT . '/config/api_key.php'; // api_key.php
 $guest_config_file = APP_ROOT . '/config/config.guest.php'; // config.guest.php
@@ -1639,7 +1649,7 @@ auto_delete(); //定时删除
                         add_time: '<?php echo date('Y-m-d H:i:s', $value['add_time']); ?>',
                         expired: '<?php echo $expired; ?>',
                         number: <?php echo get_file_by_glob(APP_ROOT . $config['path'] . $value['id'], $type = 'number'); ?>,
-                        manage: "<a href='admin.inc.php?stop_token=<?php echo $key; ?>' class='btn btn-mini btn-danger'>禁用</a> <a href='admin.inc.php?delete_token=<?php echo $key; ?>' class='btn btn-mini btn-danger'>删除</a> <a href='#' onclick=\"ajax_post('<?php echo $value['id']; ?>','delDir')\" class='btn btn-mini btn-primary <?php if (!$config['token_path_status']) echo 'disabled'; ?>'>删除上传</a>"
+                        manage: "<a href='admin.inc.php?stop_token=<?php echo rawurlencode($key); ?>&csrf_token=<?php echo rawurlencode(easyimage_csrf_token()); ?>' class='btn btn-mini btn-danger'>禁用</a> <a href='admin.inc.php?delete_token=<?php echo rawurlencode($key); ?>&csrf_token=<?php echo rawurlencode(easyimage_csrf_token()); ?>' class='btn btn-mini btn-danger'>删除</a> <a href='#' onclick=\"ajax_post('<?php echo $value['id']; ?>','delDir')\" class='btn btn-mini btn-primary <?php if (!$config['token_path_status']) echo 'disabled'; ?>'>删除上传</a>"
                     },
                 <?php endforeach; ?>
             ]
@@ -1717,7 +1727,7 @@ auto_delete(); //定时删除
                         add_time: '<?php echo date('Y-m-d H:i:s', $v['add_time']); ?>',
                         expired: '<?php echo $expired; ?>',
                         files: <?php echo get_file_by_glob(APP_ROOT . $config['path'] . $k, $type = 'number'); ?>,
-                        manage: "<a href='admin.inc.php?stop_guest=<?php echo $k; ?>' class='btn btn-mini btn-danger'>禁用</a> <a class='btn btn-mini btn-danger' href='admin.inc.php?delete_guest=<?php echo $k; ?>'>删除</a> <a class='btn btn-mini btn-primary <?php if (!$config['guest_path_status']) echo 'disabled'; ?>' href='#' onclick=\"ajax_post('<?php echo $k; ?>','delDir')\">删除上传</a>",
+                        manage: "<a href='admin.inc.php?stop_guest=<?php echo rawurlencode($k); ?>&csrf_token=<?php echo rawurlencode(easyimage_csrf_token()); ?>' class='btn btn-mini btn-danger'>禁用</a> <a class='btn btn-mini btn-danger' href='admin.inc.php?delete_guest=<?php echo rawurlencode($k); ?>&csrf_token=<?php echo rawurlencode(easyimage_csrf_token()); ?>'>删除</a> <a class='btn btn-mini btn-primary <?php if (!$config['guest_path_status']) echo 'disabled'; ?>' href='#' onclick=\"ajax_post('<?php echo $k; ?>','delDir')\">删除上传</a>",
                     },
                 <?php endforeach; ?>
             ]

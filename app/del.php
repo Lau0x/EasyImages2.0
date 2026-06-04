@@ -75,6 +75,7 @@ if (isset($_GET['hash'])) {
 
 // 非管理员不可访问
 if (!is_who_login('admin')) exit('Permission denied');
+if ($_SERVER['REQUEST_METHOD'] === 'POST') easyimage_require_csrf(true);
 
 // 广场 - 批量删除文件
 if (isset($_POST['del_url_array'])) {

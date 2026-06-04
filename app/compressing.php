@@ -14,6 +14,7 @@ if (!is_who_login('admin')) {
 }
 // 文件夹压缩
 if (isset($_POST['folder'])) {
+    easyimage_require_csrf();
 
     $getFolder = urldecode($_POST['folder']);
 
@@ -21,14 +22,16 @@ if (isset($_POST['folder'])) {
 
     $type = $_POST['type'];
 
-    $folder =  '..' . $config['path'] . $getFolder;
+    $folder = easyimage_resolve_upload_dir($config['path'] . $getFolder);
 
-    if (!is_dir($folder)) {
-        exit($folder . '<script> new $.zui.Messager("没有这个文件夹!", {
+    if (!$folder) {
+        exit('<script> new $.zui.Messager("没有这个文件夹!", {
 			type: "danger", // 定义颜色主题 
 			icon: "exclamation-sign" // 定义消息图标
 			}).show();</script>');
     }
+
+    $folder = rtrim(str_replace('\\', '/', $folder), '/') . '/';
 
     // 压缩前
     $sizeBefor = getDirectorySize($folder);
