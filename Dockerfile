@@ -18,9 +18,11 @@ RUN set -eux; \
     rm -rf /var/lib/apt/lists/*
 
 COPY docker/php.ini /usr/local/etc/php/conf.d/easyimage.ini
+COPY docker/apache-security.conf /etc/apache2/conf-available/easyimage-security.conf
 COPY . /var/www/html
 
 RUN set -eux; \
+    a2enconf easyimage-security; \
     mkdir -p \
         /var/www/html/i/cache \
         /var/www/html/admin/logs/counts \
