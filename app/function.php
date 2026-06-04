@@ -1110,8 +1110,13 @@ function get_online_thumbnail($imgUrl)
 {
     global $config;
     if ($config['thumbnail']) {
-        $imgUrl = str_replace($config['domain'], '', $imgUrl);
-        return $config['domain'] . '/app/thumb.php?img=' . $imgUrl;
+        $imgPath = str_replace($config['domain'], '', $imgUrl);
+        $query = array('img' => $imgPath);
+        $source = easyimage_resolve_upload_file($imgPath);
+        if ($source) {
+            $query['v'] = filemtime($source);
+        }
+        return $config['domain'] . '/app/thumb.php?' . http_build_query($query);
     }
 
     return $imgUrl;

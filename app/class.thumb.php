@@ -81,6 +81,8 @@ class Thumb
     private static function make($filename, $width, $height, $valign = 'middle')
     {
         ini_set('gd.jpeg_ignore_warning', true);
+        $width = max(1, (int)$width);
+        $height = max(1, (int)$height);
         /**
          * 2022-1-4 23:34:37 EasyImage更改图像类型判断
          * getimagesize索引2给出的是图像的类型，返回的是数字
@@ -117,6 +119,7 @@ class Thumb
 
         $thumb_h = $height; # 固定背景画布的高度
         $height = $img_h / ($img_w / $width); # 图片等比例缩放后的高度=原图的高度÷(原图的宽度÷背景画布固定宽带)
+        $image_h = max(1, (int)$height);
 
         # 创建新的背景画布
         if ($height >= $thumb_h) {
@@ -124,10 +127,10 @@ class Thumb
             @imagealphablending($thumb, false); //这里很重要,意思是不合并颜色,直接用$img图像颜色替换,包括透明色;2-1
             @imagesavealpha($thumb, true); //这里很重要,意思是不要丢了$thumb图像的透明色;2-2 EasyImage修改
         } else {
-            $thumb = imagecreatetruecolor($width, $height);
+            $thumb = imagecreatetruecolor($width, $image_h);
             @imagealphablending($thumb, false); //这里很重要,意思是不合并颜色,直接用$img图像颜色替换,包括透明色;2-1
             @imagesavealpha($thumb, true); //这里很重要,意思是不要丢了$thumb图像的透明色;2-2 EasyImage修改
-            $thumb_h = $height;
+            $thumb_h = $image_h;
         }
 
         # 载入要缩放的图片
@@ -153,9 +156,10 @@ class Thumb
                     break;
                 }
         }
+        $dst_y = max(0, (int)$dst_y);
 
         # 合成缩略图
-        imagecopyresampled($thumb, $tmp_img, 0, 0, 0, $dst_y, $width, $height, $img_w, $img_h);
+        imagecopyresampled($thumb, $tmp_img, 0, 0, 0, $dst_y, $width, $image_h, $img_w, $img_h);
 
         # 展示图片
         ob_start();
