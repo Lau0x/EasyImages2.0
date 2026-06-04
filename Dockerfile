@@ -1,0 +1,33 @@
+FROM php:8.3-apache
+
+RUN set -eux; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends \
+        libcurl4-openssl-dev \
+        libfreetype6-dev \
+        libjpeg62-turbo-dev \
+        libonig-dev \
+        libpng-dev \
+        libwebp-dev \
+        libzip-dev; \
+    docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp; \
+    docker-php-ext-install -j"$(nproc)" curl exif fileinfo gd mbstring opcache zip; \
+    a2enmod headers rewrite; \
+    rm -rf /var/lib/apt/lists/*
+
+COPY docker/php.ini /usr/local/etc/php/conf.d/easyimage.ini
+COPY . /var/www/html
+
+RUN set -eux; \
+    mkdir -p \
+        /var/www/html/i/cache \
+        /var/www/html/admin/logs/counts \
+        /var/www/html/admin/logs/login \
+        /var/www/html/admin/logs/tasks \
+        /var/www/html/admin/logs/upload \
+        /var/www/html/admin/logs/version; \
+    chown -R www-data:www-data /var/www/html/i /var/www/html/config /var/www/html/admin/logs; \
+    find /var/www/html -type d -exec chmod 755 {} \;; \
+    find /var/www/html -type f -exec chmod 644 {} \;
+
+EXPOSE 80
