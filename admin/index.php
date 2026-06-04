@@ -3,8 +3,10 @@
  * 登录页面
  */
 require_once __DIR__ . '/../app/function.php';
-require_once APP_ROOT . '/app/header.php';
-require_once APP_ROOT . '/config/config.guest.php';
+
+$easyimageLoginNotice = null;
+$easyimageRedirectUrl = null;
+$easyimageRedirectDelay = 2;
 
 // 退出
 if (isset($_GET['login'])) {
@@ -12,31 +14,13 @@ if (isset($_GET['login'])) {
 
         if (isset($_COOKIE['auth'])) {
             setcookie('auth', null, time() - 1, '/');
-            header("Refresh:2;url=../index.php");
-            echo '
-				<script>
-					new $.zui.Messager("退出成功", {
-						type: "success", // 定义颜色主题 
-						icon: "ok-sign" // 定义消息图标
-					}).show();
-					// 延时2s跳转
-					window.setTimeout("window.location=\'../index.php\'",2000);
-				</script>
-        ';
+            $easyimageLoginNotice = array('message' => '退出成功', 'type' => 'success', 'icon' => 'ok-sign');
+            $easyimageRedirectUrl = '../index.php';
         } else {
-            echo '
-				<script>
-				new $.zui.Messager("尚未登录", {
-					type: "danger", // 定义颜色主题 
-					icon: "exclamation-sign" // 定义消息图标
-				}).show();
-				// 延时2s跳转
-				window.setTimeout("window.location=\'./index.php\'",2000);
-				</script>
-        ';
+            $easyimageLoginNotice = array('message' => '尚未登录', 'type' => 'danger', 'icon' => 'exclamation-sign');
+            $easyimageRedirectUrl = './index.php';
         }
     }
-    exit(require_once APP_ROOT . '/app/footer.php');
 }
 
 // 提交登录
@@ -45,57 +29,54 @@ if (isset($_POST['password']) and isset($_POST['user'])) {
     // 验证码
     if ($config['captcha']) {
         if (empty($_REQUEST['code'])) {
-            echo '
-            <script>
-                new $.zui.Messager("请填写验证码!", {type: "danger" // 定义颜色主题 
-                }).show();
-                // 延时2s跳转
-                window.setTimeout("window.location=\'./index.php\'",2000);
-            </script>';
-            exit(require_once APP_ROOT . '/app/footer.php');
+            $easyimageLoginNotice = array('message' => '请填写验证码!', 'type' => 'danger', 'icon' => 'exclamation-sign');
+            $easyimageRedirectUrl = './index.php';
         } else {
             easyimage_session_start();
             if (strtolower($_REQUEST['code']) !== $_SESSION['code']) {
-                echo '
-                <script>
-                    new $.zui.Messager("验证码错误!", {type: "danger" // 定义颜色主题 
-                    }).show();
-                    // 延时2s跳转
-				    window.setTimeout("window.location=\'./index.php\'",2000);
-                </script>';
-                exit(require_once APP_ROOT . '/app/footer.php');
+                $easyimageLoginNotice = array('message' => '验证码错误!', 'type' => 'danger', 'icon' => 'exclamation-sign');
+                $easyimageRedirectUrl = './index.php';
             }
         }
     }
 
-    $login = _login($_POST['user'], $_POST['password']);
-    $login = json_decode($login, true);
+    if ($easyimageLoginNotice === null) {
+        $login = _login($_POST['user'], $_POST['password']);
+        $login = json_decode($login, true);
 
-    if ($login['code'] == 200) {
-        echo '
-        <script> 
-            new $.zui.Messager("' . $login["messege"] . '" , {
-            type: "primary", // 定义颜色主题
-            icon: "check" // 定义消息图标
-            }).show();
-        </script>';
-        header("refresh:2;url=" . $config['domain'] . "");
-    } else {
-        echo '
-        <script> 
-            new $.zui.Messager("' . $login["messege"] . '" , {
-            type: "danger", // 定义颜色主题
-            icon: "times" // 定义消息图标
-            }).show();
-        </script>';
-        header("refresh:2;");
+        if ($login['code'] == 200) {
+            $easyimageLoginNotice = array('message' => $login["messege"], 'type' => 'primary', 'icon' => 'check');
+            $easyimageRedirectUrl = $config['domain'];
+        } else {
+            $easyimageLoginNotice = array('message' => $login["messege"], 'type' => 'danger', 'icon' => 'times');
+            $easyimageRedirectUrl = './index.php';
+        }
+
+        // 登录日志
+        write_login_log($_POST['user'], '', $login["messege"]);
     }
-
-    // 登录日志
-    write_login_log($_POST['user'], '', $login["messege"]);
 }
+
+if ($easyimageRedirectUrl !== null) {
+    header("Refresh:" . $easyimageRedirectDelay . ";url=" . $easyimageRedirectUrl);
+}
+
+require_once APP_ROOT . '/app/header.php';
 ?>
 <link rel="stylesheet" href="<?php static_cdn(); ?>/public/static/login.css">
+<?php if ($easyimageLoginNotice !== null) : ?>
+    <script>
+        new $.zui.Messager(<?php echo json_encode($easyimageLoginNotice['message'], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>, {
+            type: <?php echo json_encode($easyimageLoginNotice['type']); ?>,
+            icon: <?php echo json_encode($easyimageLoginNotice['icon']); ?>
+        }).show();
+        <?php if ($easyimageRedirectUrl !== null) : ?>
+            window.setTimeout(function() {
+                window.location = <?php echo json_encode($easyimageRedirectUrl, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
+            }, <?php echo (int)($easyimageRedirectDelay * 1000); ?>);
+        <?php endif; ?>
+    </script>
+<?php endif; ?>
 <!-- 忘记密码 -->
 <div class="modal fade" id="fogot">
     <div class="modal-dialog ">
