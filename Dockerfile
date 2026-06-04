@@ -30,6 +30,7 @@ RUN set -eux; \
         /var/www/html/admin/logs/version; \
     chown -R www-data:www-data /var/www/html/i /var/www/html/config /var/www/html/admin/logs; \
     find /var/www/html -type d -exec chmod 755 {} \;; \
-    find /var/www/html -type f -exec chmod 644 {} \;
+    find /var/www/html -type f -exec chmod 644 {} \;; \
+    chmod 755 /var/www/html/app/upload.php
 
 EXPOSE 80
