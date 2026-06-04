@@ -4,6 +4,7 @@
 .idea
 .vscode
 admin/logs/*
+config/*.lock
 docs
 i/*
 !i/.htaccess
