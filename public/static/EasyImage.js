@@ -47,10 +47,11 @@ function uploadCopy(copyID, loadClass) {
 /** 粘贴上传 2023-01-30 */
 (function () {
     document.addEventListener('paste', function (e) {
-        var items = ((e.clipboardData || window.clipboardData).items) || [];
-        console.log(e)
+        var clipboardData = e.clipboardData || window.clipboardData;
+        var items = (clipboardData && clipboardData.items) || [];
+        var files = (clipboardData && clipboardData.files) || [];
         var file = null;
-        $("#upShowID").addClass("load-indicator loading"); // 增加正在上传状态 2-1
+
         if (items && items.length) {
             for (var i = 0; i < items.length; i++) {
                 if (items[i].type.indexOf('image') !== -1) {
@@ -60,11 +61,23 @@ function uploadCopy(copyID, loadClass) {
             }
         }
 
+        if (!file && files && files.length) {
+            for (var j = 0; j < files.length; j++) {
+                if (files[j].type.indexOf('image') !== -1) {
+                    file = files[j];
+                    break;
+                }
+            }
+        }
+
         // 未找到图片
         if (!file) {
-            $("#upShowID").removeClass("load-indicator loading"); // 移除正在上传状态 2-2
-            $.zui.messager.show('粘贴内容非图片!', { icon: 'bell', time: 3000, type: 'danger', placement: 'top' }); return;
+            return;
         }
+
+        e.preventDefault();
+        e.stopPropagation();
+        $("#upShowID").addClass("load-indicator loading"); // 增加正在上传状态 2-1
 
         var formData = new FormData();
         formData.append('file', file);
