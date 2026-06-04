@@ -11,8 +11,10 @@ RUN set -eux; \
         libwebp-dev \
         libzip-dev; \
     docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp; \
-    docker-php-ext-install -j"$(nproc)" curl exif fileinfo gd mbstring opcache zip; \
+    docker-php-ext-install -j"$(nproc)" curl exif gd mbstring opcache zip; \
     a2enmod headers rewrite; \
+    echo 'ServerName localhost' > /etc/apache2/conf-available/servername.conf; \
+    a2enconf servername; \
     rm -rf /var/lib/apt/lists/*
 
 COPY docker/php.ini /usr/local/etc/php/conf.d/easyimage.ini
