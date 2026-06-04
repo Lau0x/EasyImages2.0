@@ -19,6 +19,22 @@
 ***本程序环境要求极低，适用于单一场景（游客上传）和个人使用，不适于多用户复杂场景***
 >本人善写bug 发现bug可提交 [issues](https://github.com/icret/EasyImages2.0/issues) 追求稳定请下载 [稳定版](https://github.com/icret/EasyImages2.0/releases)
 
+## Docker 快速部署
+
+```sh
+git clone https://github.com/Lau0x/easyimage.git
+cd easyimage
+docker compose up -d --build
+```
+
+启动后访问 `http://localhost:8080/install` 完成安装。默认端口是 `8080`，需要改端口可以这样启动：
+
+```sh
+EASYIMAGE_PORT=8088 docker compose up -d --build
+```
+
+图片、配置和日志默认保存在本机 `i/`、`config/`、`admin/logs/`，迁移时备份这三个目录即可；项目仍然是无数据库部署。
+
 ## 特点
 
 * [x] 支持API

@@ -10,7 +10,7 @@
 API地址:https://png.cm/api/index.php // 输入你网站api地址
 POST参数名: image
 JSON路径: url
-自定义Body: {"token":"1c17b11693cb5ec63859b091c5b9c1b2"} // 这里输入你网站生成的token
+自定义Body: {"token":"YOUR_API_TOKEN"} // 这里输入你网站生成的token
 ```
 
   [1]: https://github.com/Molunerfinn/PicGo/releases

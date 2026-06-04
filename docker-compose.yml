@@ -3,7 +3,7 @@ services:
     build: .
     image: easyimage:local
     ports:
-      - "8080:80"
+      - "${EASYIMAGE_PORT:-8080}:80"
     environment:
       TZ: Asia/Shanghai
     volumes:

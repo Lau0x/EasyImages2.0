@@ -12,7 +12,7 @@ API地址:https://png.cm/api/index.php // 输入你网站api地址
 文件字段名: image
 添加其他字段：
     - 增加Header字段: content-type multipart/form-data
-    - 增加Body字段: token 1c17b11693cb5ec63859b091c5b9c1b2 // 使用你的token
+    - 增加Body字段: token YOUR_API_TOKEN // 使用你的token
 url路径: ["url"]
 ```
 
