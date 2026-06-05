@@ -4,8 +4,8 @@
 
 新的维护版本已经迁移到：
 
-- 项目仓库：https://github.com/Lau0x/easyimage
-- Docker 镜像：`ghcr.io/lau0x/easyimage:latest`
+- 项目仓库：https://github.com/Lau0x/piclite
+- Docker 镜像：`ghcr.io/lau0x/piclite:latest`
 - 上游项目：https://github.com/icret/EasyImages2.0
 
 新项目名为 **PicLite**，仍然保留无数据库结构、`/i/` 图片目录和 Docker 部署兼容性。
@@ -13,11 +13,11 @@
 ## 推荐部署
 
 ```sh
-git clone https://github.com/Lau0x/easyimage.git
-cd easyimage
+git clone https://github.com/Lau0x/piclite.git
+cd piclite
 docker compose pull
 docker compose up -d
-docker compose logs easyimage
+docker compose logs piclite
 ```
 
 首次安装时，请在日志里查看安装 Token，然后访问 `http://localhost:8080/install` 完成初始化。
