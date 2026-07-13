@@ -3,6 +3,10 @@
 
 /admin/logs/
 /config/*.lock
+/config/lite.local.php
+/config/lite.secret.php
+/config/lite.secret.php.*.tmp
+/config/lite-rate/
 /i/**
 !/i/.htaccess
 !/i/favicon.ico

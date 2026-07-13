@@ -5,6 +5,9 @@
 .vscode
 admin/logs/*
 config/*.lock
+config/lite.local.php
+config/lite.secret.php*
+config/lite-rate
 docs
 i/*
 !i/.htaccess

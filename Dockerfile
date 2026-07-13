@@ -19,6 +19,7 @@ RUN set -eux; \
 
 COPY docker/php.ini /usr/local/etc/php/conf.d/easyimage.ini
 COPY docker/apache-security.conf /etc/apache2/conf-available/easyimage-security.conf
+COPY docker/entrypoint.sh /usr/local/bin/easyimage-entrypoint
 COPY . /var/www/html
 
 RUN set -eux; \
@@ -33,6 +34,8 @@ RUN set -eux; \
     chown -R www-data:www-data /var/www/html/i /var/www/html/config /var/www/html/admin/logs; \
     find /var/www/html -type d -exec chmod 755 {} \;; \
     find /var/www/html -type f -exec chmod 644 {} \;; \
-    chmod 755 /var/www/html/app/upload.php
+    chmod 755 /var/www/html/app/upload.php /usr/local/bin/easyimage-entrypoint
 
 EXPOSE 80
+
+ENTRYPOINT ["/usr/local/bin/easyimage-entrypoint"]
