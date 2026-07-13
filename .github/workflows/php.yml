@@ -1,36 +1,47 @@
-name: PHP Composer
+name: Lite CI
 
 on:
   push:
-    branches: [ master ]
+    branches:
+      - master
+      - 'codex/**'
   pull_request:
-    branches: [ master ]
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lite-ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  build:
-
+  test:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
-    - uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
-    - name: Validate composer.json and composer.lock
-      run: composer validate --strict
+      - name: Run static checks
+        run: |
+          sh -n docker/entrypoint.sh
+          bash -n scripts/lite-smoke-test.sh
+          node --check lite/assets/app.js
+          docker compose config --quiet
 
-    - name: Cache Composer packages
-      id: composer-cache
-      uses: actions/cache@v2
-      with:
-        path: vendor
-        key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-php-
+      - name: Build Lite image
+        run: docker build --tag easyimage:ci .
 
-    - name: Install dependencies
-      run: composer install --prefer-dist --no-progress
+      - name: Lint Lite PHP
+        run: >-
+          docker run --rm --entrypoint sh easyimage:ci -c
+          'find /var/www/html/lite -type f -name "*.php" -exec php -l {} \;'
 
-    # Add a test script to composer.json, for instance: "test": "vendor/bin/phpunit"
-    # Docs: https://getcomposer.org/doc/articles/scripts.md
-
-    # - name: Run test suite
-    #   run: composer run-script test
+      - name: Run Lite smoke test
+        run: bash scripts/lite-smoke-test.sh easyimage:ci
