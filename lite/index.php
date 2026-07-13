@@ -112,7 +112,7 @@ $appUrl = liteAppUrl($liteConfig);
 <?php else: ?>
     <header class="topbar">
         <a class="brand" href="<?= liteEscape($appUrl) ?>"><b>DR</b><span>EasyImage<br>Lite</span></a>
-        <nav><a href="#upload">上传</a><a href="#gallery">图库</a></nav>
+        <nav aria-label="主导航"><a class="mobile-nav-link" href="<?= liteEscape($appUrl) ?>" aria-current="page">工作台</a><a class="desktop-nav-link" href="#upload">上传</a><a class="desktop-nav-link" href="#gallery">图库</a><a href="<?= liteEscape(liteAppUrl($liteConfig, 'tokens.php')) ?>">API 凭证</a></nav>
         <form method="post"><input type="hidden" name="action" value="logout"><input type="hidden" name="csrf" value="<?= liteEscape($csrf) ?>"><button class="text-button">退出</button></form>
     </header>
     <main class="main-grid">

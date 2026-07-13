@@ -40,11 +40,22 @@ document.addEventListener('click', async (event) => {
     try {
         await navigator.clipboard.writeText(button.dataset.copy);
         const previous = button.textContent;
+        const status = button.parentElement?.querySelector('[data-copy-status]');
         button.textContent = '已复制';
+        if (status) {
+            status.textContent = 'API 凭证已复制到剪贴板';
+        }
         window.setTimeout(() => {
             button.textContent = previous;
+            if (status) {
+                status.textContent = '';
+            }
         }, 1200);
     } catch {
-        window.prompt('复制图片地址', button.dataset.copy);
+        const status = button.parentElement?.querySelector('[data-copy-status]');
+        if (status) {
+            status.textContent = '自动复制失败，请手动复制';
+        }
+        window.prompt('复制内容', button.dataset.copy);
     }
 });

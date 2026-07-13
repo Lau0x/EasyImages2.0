@@ -8,6 +8,7 @@ require_once __DIR__ . '/src/Config.php';
 require_once __DIR__ . '/src/Auth.php';
 require_once __DIR__ . '/src/UploadService.php';
 require_once __DIR__ . '/src/Gallery.php';
+require_once __DIR__ . '/src/TokenStore.php';
 
 try {
     $liteConfig = LiteConfig::load(EASYIMAGE_ROOT);
@@ -19,6 +20,11 @@ try {
     exit;
 }
 date_default_timezone_set((string) $liteConfig['timezone']);
+
+if ($liteConfig['needs_setup']) {
+    header('Location: ' . LiteUrl::app($liteConfig, 'setup.php'), true, 302);
+    exit;
+}
 
 function liteEscape(string|int $value): string
 {

@@ -42,22 +42,40 @@ $bearer = preg_match('/^Bearer\s+(.+)$/i', $authorization, $match) === 1 ? trim(
 $headerToken = trim((string) ($_SERVER['HTTP_X_API_KEY'] ?? ''));
 $postToken = is_string($_POST['token'] ?? null) ? trim($_POST['token']) : '';
 $token = $headerToken !== '' ? $headerToken : ($bearer !== '' ? $bearer : $postToken);
-$matchedToken = null;
-$tokenEntry = null;
-foreach ($liteConfig['api_tokens'] as $knownToken => $entry) {
-    if (is_string($knownToken) && hash_equals($knownToken, $token)) {
-        $matchedToken = $knownToken;
-        $tokenEntry = $entry;
+$identity = null;
+try {
+    $identity = (new LiteTokenStore(EASYIMAGE_ROOT . '/config'))->validate($token);
+} catch (RuntimeException $exception) {
+    error_log('EasyImage Lite token store error: ' . $exception->getMessage());
+    apiResponse('failed', 500, 'Token Store Error', [], 500);
+}
+
+$legacyExpiredId = null;
+if ($identity === null && $liteConfig['allow_legacy_api_tokens']) {
+    foreach ($liteConfig['api_tokens'] as $knownToken => $entry) {
+        if (!is_string($knownToken)) {
+            continue;
+        }
+        $equal = hash_equals($knownToken, $token);
+        if (!$equal) {
+            continue;
+        }
+        $id = is_array($entry) ? ($entry['id'] ?? 0) : $entry;
+        if (is_array($entry) && isset($entry['expired']) && (int) $entry['expired'] <= time()) {
+            $legacyExpiredId = $id;
+        } else {
+            $identity = ['id' => $id, 'label' => 'Legacy token'];
+        }
     }
 }
-if ($token === '' || $matchedToken === null) {
+if ($identity === null && $legacyExpiredId !== null) {
+    apiResponse('failed', 203, 'Token Expired', ['id' => $legacyExpiredId], 401);
+}
+if ($token === '' || $identity === null) {
     apiResponse('failed', 202, 'Token Error', [], 401);
 }
 
-$tokenId = is_array($tokenEntry) ? ($tokenEntry['id'] ?? 0) : $tokenEntry;
-if (is_array($tokenEntry) && isset($tokenEntry['expired']) && (int) $tokenEntry['expired'] <= time()) {
-    apiResponse('failed', 203, 'Token Expired', ['id' => $tokenId], 401);
-}
+$tokenId = $identity['id'];
 if (!isset($_FILES['image']) || is_array($_FILES['image']['name'] ?? null)) {
     apiResponse('failed', 204, '没有选择上传的文件', ['id' => $tokenId], 400);
 }

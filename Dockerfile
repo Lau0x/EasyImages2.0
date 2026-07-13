@@ -12,7 +12,7 @@ RUN set -eux; \
         libzip-dev; \
     docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp; \
     docker-php-ext-install -j"$(nproc)" curl exif gd mbstring opcache zip; \
-    a2enmod headers rewrite; \
+    a2enmod alias headers rewrite; \
     echo 'ServerName localhost' > /etc/apache2/conf-available/servername.conf; \
     a2enconf servername; \
     rm -rf /var/lib/apt/lists/*

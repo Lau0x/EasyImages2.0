@@ -28,7 +28,8 @@ body {
 }
 
 button,
-input {
+input,
+select {
     font: inherit;
 }
 
@@ -263,14 +264,20 @@ button:disabled {
 
 .topbar nav a,
 .text-button {
+    display: inline-flex;
     min-height: 44px;
     padding: 10px;
+    align-items: center;
     border: 0;
     background: none;
     font-family: "Avenir Next", "PingFang SC", sans-serif;
     font-size: 12px;
     font-weight: 600;
     text-decoration: none;
+}
+
+.mobile-nav-link {
+    display: none !important;
 }
 
 .topbar > form {
@@ -656,6 +663,503 @@ footer {
     max-width: 300px;
 }
 
+.setup-page {
+    min-height: 100vh;
+    background:
+        linear-gradient(90deg, transparent 0 49.95%, rgba(241, 236, 223, 0.12) 50%, transparent 50.05%),
+        var(--ink);
+}
+
+.setup-shell {
+    display: grid;
+    grid-template-columns: minmax(360px, 0.92fr) minmax(480px, 1.08fr);
+    min-height: 100vh;
+}
+
+.setup-intro {
+    position: relative;
+    display: flex;
+    overflow: hidden;
+    padding: clamp(42px, 7vw, 104px);
+    flex-direction: column;
+    justify-content: center;
+    color: var(--paper);
+}
+
+.setup-intro::after {
+    position: absolute;
+    right: -22vw;
+    bottom: -28vw;
+    width: 54vw;
+    height: 54vw;
+    border: 1px solid rgba(241, 236, 223, 0.24);
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 8vw rgba(184, 58, 24, 0.78);
+    content: "";
+}
+
+.setup-index {
+    margin: 48px 0 18px;
+    color: var(--orange);
+    font-family: "Avenir Next", "PingFang SC", sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+}
+
+.setup-intro h1 {
+    position: relative;
+    z-index: 1;
+    margin: 0;
+    font-size: clamp(62px, 7.3vw, 118px);
+    font-weight: 400;
+    line-height: 0.86;
+    letter-spacing: -0.06em;
+}
+
+.setup-intro h1 em {
+    color: var(--orange);
+    font-weight: 400;
+}
+
+.setup-intro > p:last-child {
+    position: relative;
+    z-index: 1;
+    max-width: 470px;
+    margin: 42px 0 0;
+    color: rgba(241, 236, 223, 0.72);
+    font-size: 16px;
+    line-height: 1.75;
+}
+
+.setup-panel {
+    display: flex;
+    padding: clamp(42px, 7vw, 110px);
+    flex-direction: column;
+    justify-content: center;
+    background: var(--paper);
+}
+
+.setup-heading {
+    display: flex;
+    margin-bottom: 38px;
+    gap: 22px;
+    align-items: center;
+}
+
+.setup-heading > span {
+    width: 54px;
+    height: 54px;
+    border: 1px solid var(--ink);
+    border-radius: 50%;
+    background: conic-gradient(from 20deg, var(--ink) 0 14%, transparent 14% 28%, var(--ink) 28% 42%, transparent 42% 56%, var(--ink) 56% 70%, transparent 70% 84%, var(--ink) 84%);
+}
+
+.setup-heading .eyebrow {
+    margin-bottom: 5px;
+}
+
+.setup-heading h2 {
+    margin: 0;
+    font-size: clamp(36px, 4vw, 60px);
+    font-weight: 400;
+    letter-spacing: -0.045em;
+}
+
+.setup-form {
+    display: grid;
+    gap: 19px;
+}
+
+.setup-form label {
+    font-family: "Avenir Next", "PingFang SC", sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+}
+
+.setup-form input {
+    display: block;
+    width: 100%;
+    min-height: 52px;
+    margin-top: 7px;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 0;
+    outline: 0;
+    background: rgba(255, 253, 247, 0.55);
+}
+
+.setup-form input:focus {
+    border-color: var(--orange);
+    background: var(--white);
+    box-shadow: 4px 4px 0 var(--orange);
+}
+
+.setup-form > small {
+    margin-top: -11px;
+    color: var(--muted);
+    font-family: "Avenir Next", "PingFang SC", sans-serif;
+    font-size: 11px;
+    line-height: 1.55;
+}
+
+.setup-passwords {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.setup-form .button {
+    margin-top: 8px;
+}
+
+.setup-note {
+    margin: 22px 0 0;
+    color: var(--muted);
+    font-family: "Avenir Next", "PingFang SC", sans-serif;
+    font-size: 11px;
+}
+
+.setup-note code {
+    color: var(--ink);
+}
+
+.token-page {
+    min-height: 100vh;
+    background:
+        linear-gradient(rgba(23, 23, 20, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(23, 23, 20, 0.035) 1px, transparent 1px),
+        var(--paper);
+    background-size: 32px 32px;
+}
+
+.token-page .brand,
+.token-page footer {
+    font-size: 11px;
+}
+
+.token-topbar .cabinet-mark {
+    justify-self: end;
+    color: var(--muted);
+    font-family: "Avenir Next", "PingFang SC", sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.topbar nav a[aria-current="page"] {
+    text-decoration: underline;
+    text-decoration-color: var(--orange);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 8px;
+}
+
+.token-shell {
+    padding: 0 clamp(20px, 4vw, 64px) 90px;
+}
+
+.token-hero {
+    display: grid;
+    min-height: 500px;
+    padding: 90px 0 62px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 48px;
+    align-items: end;
+    border-bottom: 1px solid var(--ink);
+}
+
+.token-hero h1 {
+    margin: 0;
+    font-size: clamp(58px, 8vw, 128px);
+    font-weight: 400;
+    line-height: 0.82;
+    letter-spacing: -0.06em;
+}
+
+.token-hero h1 em {
+    color: var(--orange);
+    font-weight: 400;
+}
+
+.token-gauge {
+    display: grid;
+    width: clamp(170px, 19vw, 250px);
+    aspect-ratio: 1;
+    padding: 27px;
+    border: 1px solid var(--ink);
+    border-radius: 50%;
+    place-content: center;
+    text-align: center;
+    box-shadow: inset 0 0 0 13px var(--paper), inset 0 0 0 14px var(--line);
+}
+
+.token-gauge span {
+    color: var(--orange);
+    font-size: clamp(60px, 7vw, 100px);
+    line-height: 0.8;
+    letter-spacing: -0.06em;
+}
+
+.token-gauge small {
+    margin-top: 18px;
+    font-family: "Avenir Next", "PingFang SC", sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.17em;
+    line-height: 1.45;
+    text-transform: uppercase;
+}
+
+.token-flash {
+    margin: 28px 0 0;
+}
+
+.token-flash code {
+    color: inherit;
+}
+
+.token-reveal {
+    display: grid;
+    margin-top: 28px;
+    padding: clamp(26px, 4vw, 52px);
+    grid-template-columns: minmax(220px, 0.7fr) minmax(0, 1.3fr);
+    gap: 36px;
+    align-items: center;
+    border: 1px solid var(--orange);
+    background: var(--ink);
+    color: var(--paper);
+    box-shadow: 10px 10px 0 var(--orange);
+}
+
+.token-reveal h2 {
+    margin: 0 0 12px;
+    font-size: clamp(32px, 4vw, 54px);
+    font-weight: 400;
+    letter-spacing: -0.04em;
+}
+
+.token-reveal p:not(.eyebrow) {
+    max-width: 440px;
+    margin: 0;
+    color: rgba(241, 236, 223, 0.7);
+    line-height: 1.6;
+}
+
+.token-secret {
+    display: grid;
+    min-width: 0;
+    gap: 14px;
+}
+
+.token-secret code {
+    overflow-wrap: anywhere;
+    padding: 20px;
+    border: 1px dashed rgba(241, 236, 223, 0.45);
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--paper);
+    font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.cabinet-grid {
+    display: grid;
+    padding: 82px 0;
+    grid-template-columns: minmax(260px, 0.7fr) minmax(360px, 1.3fr);
+    gap: clamp(50px, 9vw, 150px);
+    border-bottom: 1px solid var(--line);
+}
+
+.cabinet-label > span {
+    display: block;
+    margin-bottom: 42px;
+    color: var(--orange);
+    font-family: "Avenir Next", "PingFang SC", sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.17em;
+}
+
+.cabinet-label h2,
+.inventory-heading h2 {
+    margin: 0;
+    font-size: clamp(38px, 5vw, 68px);
+    font-weight: 400;
+    letter-spacing: -0.045em;
+}
+
+.cabinet-label > p:last-child {
+    max-width: 430px;
+    margin: 24px 0 0;
+    color: var(--muted);
+    line-height: 1.7;
+}
+
+.token-create-form {
+    display: grid;
+    padding: clamp(26px, 4vw, 50px);
+    gap: 24px;
+    border: 1px solid var(--ink);
+    background: rgba(255, 253, 247, 0.64);
+    box-shadow: 9px 9px 0 var(--paper-deep);
+}
+
+.token-create-form label {
+    font-family: "Avenir Next", "PingFang SC", sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+}
+
+.token-create-form input,
+.token-create-form select {
+    display: block;
+    width: 100%;
+    min-height: 52px;
+    margin-top: 8px;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 0;
+    outline: 0;
+    background: var(--white);
+}
+
+.token-create-form input:focus,
+.token-create-form select:focus {
+    border-color: var(--orange);
+    box-shadow: 4px 4px 0 var(--orange);
+}
+
+.token-inventory {
+    padding: 82px 0 0;
+}
+
+.inventory-heading {
+    display: flex;
+    margin-bottom: 38px;
+    gap: 30px;
+    align-items: end;
+    justify-content: space-between;
+}
+
+.inventory-heading > code {
+    max-width: 45%;
+    overflow-wrap: anywhere;
+    padding: 8px 10px;
+    background: var(--paper-deep);
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.token-table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--ink);
+    background: var(--white);
+}
+
+.token-table {
+    width: 100%;
+    min-width: 790px;
+    border-collapse: collapse;
+}
+
+.token-table th,
+.token-table td {
+    padding: 19px 18px;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+}
+
+.token-table thead th {
+    background: var(--ink);
+    color: var(--paper);
+    font-family: "Avenir Next", "PingFang SC", sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.token-table tbody tr:last-child > * {
+    border-bottom: 0;
+}
+
+.token-table tbody th strong,
+.token-table tbody th small {
+    display: block;
+}
+
+.token-table tbody th strong {
+    font-family: "Avenir Next", "PingFang SC", sans-serif;
+    font-size: 13px;
+}
+
+.token-table tbody th small {
+    margin-top: 5px;
+    color: var(--muted);
+    font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+    font-size: 11px;
+}
+
+.token-table td {
+    color: var(--muted);
+    font-family: "Avenir Next", "PingFang SC", sans-serif;
+    font-size: 11px;
+}
+
+.token-status {
+    display: inline-flex;
+    min-height: 28px;
+    padding: 0 9px;
+    align-items: center;
+    border: 1px solid currentColor;
+    font-size: 11px;
+}
+
+.token-status.active {
+    color: var(--green);
+}
+
+.token-status.expired {
+    color: var(--muted);
+}
+
+.token-revoke {
+    min-height: 44px;
+    padding: 8px 13px;
+    border: 1px solid var(--orange);
+    background: transparent;
+    color: var(--orange-dark);
+    font-family: "Avenir Next", "PingFang SC", sans-serif;
+    font-size: 11px;
+}
+
+.token-revoke:hover {
+    background: var(--orange);
+    color: var(--white);
+}
+
+.token-empty {
+    display: grid;
+    min-height: 260px;
+    padding: 34px;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 40px;
+    align-items: center;
+    border: 1px dashed var(--line);
+    color: var(--muted);
+}
+
+.token-empty span {
+    color: var(--orange);
+    font-size: 82px;
+}
+
+.token-empty p {
+    max-width: 480px;
+    line-height: 1.7;
+}
+
 @keyframes rise {
     from {
         opacity: 0;
@@ -685,12 +1189,30 @@ footer {
     .login-shell {
         grid-template-columns: 1fr;
     }
-    .login-art,
-    .topbar nav {
+    .login-art {
         display: none;
     }
     .topbar {
-        grid-template-columns: 1fr auto;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        gap: 8px;
+    }
+    .topbar nav {
+        display: flex;
+        min-width: 0;
+        gap: 2px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    .topbar nav a {
+        min-height: 44px;
+        padding: 8px;
+        white-space: nowrap;
+    }
+    .topbar nav .desktop-nav-link {
+        display: none;
+    }
+    .topbar nav .mobile-nav-link {
+        display: inline-flex !important;
     }
     .hero {
         grid-template-columns: 1fr;
@@ -713,6 +1235,28 @@ footer {
     }
     .frame:nth-child(4n + 2) {
         transform: none;
+    }
+    .setup-shell {
+        grid-template-columns: 1fr;
+    }
+    .setup-intro {
+        min-height: 430px;
+    }
+    .setup-intro::after {
+        right: -25vw;
+        bottom: -50vw;
+        width: 80vw;
+        height: 80vw;
+    }
+    .token-hero {
+        min-height: 430px;
+    }
+    .cabinet-grid {
+        grid-template-columns: 1fr;
+        gap: 42px;
+    }
+    .token-reveal {
+        grid-template-columns: 1fr;
     }
 }
 
@@ -767,6 +1311,65 @@ footer {
     }
     .date-nav input {
         width: 100%;
+    }
+    .setup-intro,
+    .setup-panel {
+        padding: 42px 24px;
+    }
+    .setup-intro {
+        min-height: 400px;
+    }
+    .setup-intro h1 {
+        font-size: 62px;
+    }
+    .setup-passwords {
+        grid-template-columns: 1fr;
+    }
+    .token-topbar .cabinet-mark {
+        display: none;
+    }
+    .token-hero {
+        min-height: auto;
+        padding: 70px 0 48px;
+        grid-template-columns: 1fr;
+    }
+    .token-hero h1 {
+        font-size: 58px;
+    }
+    .token-gauge {
+        width: 160px;
+    }
+    .token-reveal {
+        padding: 26px;
+        box-shadow: 6px 6px 0 var(--orange);
+    }
+    .cabinet-grid,
+    .token-inventory {
+        padding-top: 58px;
+    }
+    .inventory-heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+    .inventory-heading > code {
+        max-width: 100%;
+    }
+    .token-empty {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    .token-page .eyebrow,
+    .token-page .brand,
+    .token-page footer,
+    .token-gauge small,
+    .token-create-form label,
+    .inventory-heading > code,
+    .token-table thead th,
+    .token-table tbody th small,
+    .token-table td,
+    .token-status,
+    .token-revoke {
+        font-size: 12px;
     }
 }
 
