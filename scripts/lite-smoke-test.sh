@@ -93,7 +93,21 @@ json_assert() {
 }
 
 token_count() {
-    python3 -c 'import json,sys; raw=open(sys.argv[1], encoding="utf-8").read().split("\n", 1)[1]; print(len(json.loads(raw)["tokens"]))' "$config_dir/lite.tokens.php"
+    docker exec "$container_id" php -r '
+        $raw = file_get_contents("/var/www/html/config/lite.tokens.php");
+        if ($raw === false) {
+            exit(2);
+        }
+        $newline = strpos($raw, "\n");
+        if ($newline === false) {
+            exit(3);
+        }
+        $data = json_decode(substr($raw, $newline + 1), true, 512, JSON_THROW_ON_ERROR);
+        if (!isset($data["tokens"]) || !is_array($data["tokens"])) {
+            exit(4);
+        }
+        echo count($data["tokens"]);
+    '
 }
 
 mkdir -p "$config_dir" "$image_dir" "$log_dir"
